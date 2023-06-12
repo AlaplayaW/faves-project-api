@@ -2,14 +2,20 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Traits\Timer;
 use App\Repository\GenreRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GenreRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource]
 class Genre
 {
+    use Timer;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -18,13 +24,14 @@ class Genre
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'genre', targetEntity: ItemGenre::class)]
+    #[ORM\OneToMany(mappedBy: 'genre', targetEntity: ItemGenre::class, orphanRemoval: true)]
     private Collection $itemGenres;
 
     public function __construct()
     {
         $this->itemGenres = new ArrayCollection();
     }
+
 
     public function getId(): ?int
     {
@@ -72,4 +79,5 @@ class Genre
 
         return $this;
     }
+
 }

@@ -2,12 +2,18 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Traits\Timer;
 use App\Repository\MediaRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource]
 class Media
 {
+    use Timer;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

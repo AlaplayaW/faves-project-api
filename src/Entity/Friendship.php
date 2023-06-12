@@ -2,12 +2,18 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Traits\Timer;
 use App\Repository\FriendshipRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FriendshipRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource]
 class Friendship
 {
+    use Timer;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

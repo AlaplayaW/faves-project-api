@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Traits\Timer;
 use App\Repository\ItemRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -9,8 +11,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ItemRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource]
 class Item
 {
+    use Timer;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -44,7 +50,7 @@ class Item
     #[ORM\OneToMany(mappedBy: 'item', targetEntity: Review::class, orphanRemoval: true)]
     private Collection $reviews;
 
-    #[ORM\OneToMany(mappedBy: 'item', targetEntity: ItemGenre::class)]
+    #[ORM\OneToMany(mappedBy: 'item', targetEntity: ItemGenre::class, orphanRemoval: true)]
     private Collection $itemGenres;
 
     public function __construct()
@@ -223,4 +229,6 @@ class Item
 
         return $this;
     }
+
+
 }

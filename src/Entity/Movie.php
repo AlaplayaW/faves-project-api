@@ -2,13 +2,19 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Traits\Timer;
 use App\Repository\MovieRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ApiResource]
 class Movie
 {
+    use Timer;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
