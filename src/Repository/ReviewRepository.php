@@ -39,6 +39,32 @@ class ReviewRepository extends ServiceEntityRepository
         }
     }
 
+      /**
+   * Récupère toutes les reviews postées par les amis du user connecté.
+   *
+   * @param int $userId Liste des IDs des amis du user connecté
+   * @return Review[] Tableau contenant les reviews postées par les amis
+   */
+  public function findReviewsByUserFriends(int $userId): array
+  {
+      $entityManager = $this->getEntityManager();
+
+      $dql = '
+          SELECT r
+          FROM App\Entity\Review r
+          JOIN App\Entity\User u WITH r.postedBy = u.id
+          JOIN App\Entity\Friendship f WITH (u.id = f.friendshipRequester OR u.id = f.friendshipAccepter)
+          WHERE f.isAccepted = true
+          AND u.id <> :userId
+          AND (f.friendshipRequester = :userId OR f.friendshipAccepter = :userId)
+      ';
+
+      $query = $entityManager->createQuery($dql);
+      $query->setParameter('userId', $userId);
+
+      return $query->getResult();
+  }
+
 //    /**
 //     * @return Review[] Returns an array of Review objects
 //     */

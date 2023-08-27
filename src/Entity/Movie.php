@@ -3,17 +3,16 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Entity\Traits\Timer;
 use App\Repository\MovieRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource]
 class Movie
 {
-    use Timer;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,19 +20,28 @@ class Movie
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['item:read', 'item:write'])]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['item:read', 'item:write'])]
     private ?string $casting = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['item:read', 'item:write'])]
     private ?string $directors = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['item:read', 'item:write'])]
     private ?\DateTimeInterface $year = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['item:read', 'item:write'])]
+    private ?int $runtime = null;
 
     #[ORM\OneToOne(inversedBy: 'movie', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['item:read', 'item:write'])]
     private ?Item $item = null;
 
     public function getId(): ?int
@@ -85,6 +93,18 @@ class Movie
     public function setYear(?\DateTimeInterface $year): self
     {
         $this->year = $year;
+
+        return $this;
+    }
+
+    public function getRuntime(): ?int
+    {
+        return $this->runtime;
+    }
+
+    public function setRuntime(?int $runtime): self
+    {
+        $this->runtime = $runtime;
 
         return $this;
     }

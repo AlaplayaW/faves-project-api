@@ -1,49 +1,38 @@
 <?php
 namespace App\Entity\Traits;
-use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+
+/**
+ * Le trait Timer est utilisé pour ajouter des propriétés de dates de création et de mise à jour à une entité, ainsi que des méthodes associées pour accéder et définir ces valeurs. Ce trait facilite la gestion automatique des dates dans les entités qui l'utilisent.
+ * 
+ */
 trait Timer {
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    #[
-        ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP']),
-        Groups(['time', 'time:read']),
-        ApiFilter(OrderFilter::class),
-        ApiFilter(DateFilter::class)
-    ]
+
+    #[Groups(['review:read'])]
+    #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private $createdAt;
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    #[
-        ORM\Column(type: 'datetime', nullable: true),
-        Groups(['time', 'time:read']),
-        ApiFilter(OrderFilter::class),
-        ApiFilter(DateFilter::class)
-    ]
+    
+    // #[Groups(['time', 'time:read'])]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private $updatedAt;
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    public function setCreatedAt(DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
         return $this;
     }
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
         return $this;

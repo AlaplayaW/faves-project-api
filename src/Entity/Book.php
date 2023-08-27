@@ -3,36 +3,40 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Entity\Traits\Timer;
 use App\Repository\BookRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource]
 class Book
 {
-    use Timer;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['item:read', 'item:write'])]
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
     private array $authors = [];
 
+    #[Groups(['item:read', 'item:write'])]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $publisher = null;
 
+    #[Groups(['item:read', 'item:write'])]
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $publishedDate = null;
 
+    #[Groups(['item:read', 'item:write'])]
     #[ORM\Column(nullable: true)]
     private ?int $pageCount = null;
 
-    #[ORM\OneToOne(inversedBy: 'book', cascade: ['persist', 'remove'])]
+    // #[Groups(['item:read', 'item:write'])]
+    #[ORM\OneToOne(inversedBy: 'book', cascade: ['persist', 'remove'], targetEntity: Item::class, fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Item $item = null;
 

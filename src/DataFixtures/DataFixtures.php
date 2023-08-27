@@ -2,7 +2,7 @@
 
 // src/DataFixtures/UserFixtures.php
 
-namespace App\DataFixtures;
+Namespace App\DataFixtures;
 
 // use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -36,9 +36,9 @@ class DataFixtures extends Fixture
     $admin->setEmail('admin@example.com');
     $admin->setRoles(['ROLE_SUPER_ADMIN']);
     $admin->setPassword($this->hasher->hashPassword($admin, 'adminpassword'));
-    $admin->setFirstname('Admin');
-    $admin->setLastname('User');
-    $admin->setUsername('admin');
+    $admin->setFirstName('Admin');
+    $admin->setLastName('User');
+    $admin->setUserName('admin');
     $admin->setPhone('1234567890');
 
     
@@ -54,15 +54,17 @@ class DataFixtures extends Fixture
       $user->setEmail('user' . $i . '@example.com');
       $user->setRoles(['ROLE_USER']);
       $user->setPassword($this->hasher->hashPassword($user, 'password' . $i));
-      $user->setFirstname('First name ' . $i);
-      $user->setLastname('Last name ' . $i);
-      $user->setUsername('username' . $i);
+      $user->setFirstName('First Name ' . $i);
+      $user->setLastName('Last Name ' . $i);
+      $user->setUserName('userName' . $i);
+      $birthDate = $this->generateRandomBirthDate();
+      $user->setBirthDate($birthDate);
       $user->setPhone('1234567890');
 
       // Générer un média associé à l'utilisateur
       $media = new Media();
       $media->setImageUrl("https://example.com/image{$i}.jpg");
-      $user->setUserMedia($media);
+      $user->setMedia($media);
 
       $manager->persist($user);
 
@@ -71,56 +73,57 @@ class DataFixtures extends Fixture
 
     }
 
-    // Générer 20 items (films ou livres)
-    for ($i = 1; $i <= 20; $i++) {
-      $item = new Item();
-      $item->setMediaType("mediaType{$i}");
-      $item->setTitle("Title{$i}");
-      $item->setSubtitle("Subtitle{$i}");
-      $item->setDescription("Description{$i}");
-      $item->setPostedBy($this->getReference('user_' . rand(1, 20)));
+// Générer 20 items (films ou livres)
+for ($i = 1; $i <= 20; $i++) {
+  $item = new Item();
+  $mediaType = rand(0, 1) ? "book" : "movie";
+  $item->setMediaType($mediaType);
+  $item->setTitle("Title{$i}");
+  $item->setSubtitle("Subtitle{$i}");
+  $item->setDescription("Description{$i}");
+  $item->setPostedBy($this->getReference('user_' . rand(1, 20)));
 
-      // Générer un média associé à un item (livre ou film)
-      $media = new Media();
-      $media->setImageUrl("https://example.com/image{$i}.jpg");
-      $item->setMedia($media);
+  // Vérifier le type de mediaType
+  if ($mediaType === "book") {
+    // Initialiser un Book
+    $book = new Book();
+    $book->setAuthors(["Author{$i}"]);
+    $book->setPublisher("Publisher{$i}");
+    $book->setPublishedDate(\DateTime::createFromFormat('Y-m-d', "2023-05-01"));
+    $book->setPageCount($i * 10);
+    $book->setItem($item);
+    $manager->persist($book);
+  } else {
+    // Initialiser un Movie
+    $movie = new Movie();
+    $movie->setType("Type{$i}");
+    $movie->setCasting("Cast{$i}");
+    $movie->setDirectors("Director{$i}");
+    $movie->setYear(\DateTime::createFromFormat('Y', 2000 + $i));
+    $movie->setItem($item);
+    $manager->persist($movie);
+  }
 
-      // Générer des genres associés à l'item
-      for ($j = 1; $j <= 3; $j++) {
-        $genre = new Genre();
-        $genre->setName("Genre{$j}");
-        $manager->persist($genre);
+  // Générer un média associé à un item (livre ou film)
+  $media = new Media();
+  $media->setImageUrl("https://example.com/image{$i}.jpg");
+  $item->setMedia($media);
 
-        $itemGenre = new ItemGenre();
-        $itemGenre->setName("ItemGenre{$j}");
-        $itemGenre->setItem($item);
-        $itemGenre->setGenre($genre);
-        $manager->persist($itemGenre);
-      }
+  // Générer des genres associés à l'item
+  for ($j = 1; $j <= 3; $j++) {
+    $genre = new Genre();
+    $genre->setName("Genre{$j}");
+    $manager->persist($genre);
 
-      // Générer un livre associé à l'item
-      $book = new Book();
-      $book->setAuthors(["Author{$i}"]);
-      $book->setPublisher("Publisher{$i}");
-      $book->setPublishedDate(\DateTime::createFromFormat('Y-m-d', "2023-05-01"));
-      $book->setPageCount($i * 10);
-      $book->setItem($item);
-      $manager->persist($book);
+    $itemGenre = new ItemGenre();
+    $itemGenre->setItem($item);
+    $itemGenre->setGenre($genre);
+    $manager->persist($itemGenre);
+  }
 
-      // Générer un film associé à l'item
-      $movie = new Movie();
-      $movie->setType("Type{$i}");
-      $movie->setCasting("Cast{$i}");
-      $movie->setDirectors("Director{$i}");
-      $movie->setYear(\DateTime::createFromFormat('Y', 2000 + $i));
-      $movie->setItem($item);
-      $manager->persist($movie);
-
-      $manager->persist($item);
-
-      $this->addReference('item_' . $i, $item);
-
-    }
+  $manager->persist($item);
+  $this->addReference('item_' . $i, $item);
+}
 
     // Générer 20 amitiés entre utilisateurs
     for ($i = 2; $i <= 20; $i++) {
@@ -148,4 +151,21 @@ class DataFixtures extends Fixture
 
     $manager->flush();
   }
+
+
+  // Fonction pour générer une date de naissance aléatoire entre 1950 et 2022
+function generateRandomBirthDate(): DateTime
+{
+    $startYear = 1950;
+    $endYear = 2022;
+    $startTimestamp = strtotime("{$startYear}-01-01");
+    $endTimestamp = strtotime("{$endYear}-12-31");
+    $randomTimestamp = mt_rand($startTimestamp, $endTimestamp);
+    
+    $randomBirthDate = new DateTime();
+    $randomBirthDate->setTimestamp($randomTimestamp);
+    
+    return $randomBirthDate;
+}
+
 }

@@ -55,6 +55,66 @@ class ItemRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    // A voir si utile ou non
+    public function findItemsWithMovieDetails()
+    {
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.movie', 'm')
+            ->addSelect('m')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // A voir si utile ou non
+    public function findItemsWithBookDetails()
+    {
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.book', 'b')
+            ->addSelect('b')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // A voir si utile ou non
+    public function findItemsWithDetails()
+    {
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.movie', 'm')
+            ->leftJoin('i.book', 'b')
+            ->addSelect('CASE WHEN i.mediaType = :movieType THEN m ELSE b END AS details')
+            ->setParameter('movieType', 'movie')
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    public function findByFriendIds(array $friendIds)
+    {
+        return $this->createQueryBuilder('item')
+            ->select('item', 'movie', 'book')
+            ->leftJoin('item.movie', 'movie')
+            ->leftJoin('item.book', 'book')
+            ->join('item.postedBy', 'user')
+            ->where('user.id IN (:friendIds)')
+            ->setParameter('friendIds', $friendIds)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByCurrentUserFriends(int $userId)
+    {
+        return $this->createQueryBuilder('item')
+            ->select('item', 'movie', 'book')
+            ->leftJoin('item.movie', 'movie')
+            ->leftJoin('item.book', 'book')
+            ->join('item.postedBy', 'user')
+            ->join('user.friends', 'friend')
+            ->where('friend.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Item[] Returns an array of Item objects
     //     */

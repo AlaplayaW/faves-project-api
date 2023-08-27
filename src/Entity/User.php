@@ -3,18 +3,68 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Controller\GetUserFriends;
 use App\Entity\Traits\Timer;
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: '`user`')]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read', 'friends']],
+    // denormalizationContext: ['groups' => ['user:write', 'item:write']],
+    operations: [
+            new Get(),
+            // new GetCollection(),
+            // new Post(),
+            // new Patch(),
+            // new Put(),
+            // new Delete(),
+            // new GetCollection(
+            //     name: 'api_user_friends',
+            //     uriTemplate: '/users/{id}/friends',
+            //     controller: GetUserFriends::class,
+            //     openapiContext: [
+            //         'summary' => 'Get all requester of a user',
+            //         'description' => '# Get all friends of a user',
+            //     ],
+            // ),
+            // new GetCollection(
+            //     name: 'api_user_friends_demands',
+            //     uriTemplate: '/users/{id}/friendship-demands/recieved',
+            //     openapiContext: [
+            //         'summary' => 'Get all friends of a user',
+            //         'description' => '# Get all friends of a user'
+            //     ],
+            // ),
+        ]
+    )]
+// #[ApiResource(
+//     uriTemplate: '/users/{id}/friends',
+//     uriVariables: [
+//         'userId' => new Link(
+//             fromClass: User::class,
+//             fromProperty: 'id'
+//         )
+//     ], 
+//     operations: [new GetCollection()]
+// )]
+// api/friendships/{userId}/sent-requests
+// api/friendships/{userId}/recieved-requests
+#[ORM\Index(name: "idx_user_id", columns: ["id"])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Timer;
@@ -22,55 +72,72 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    // #[Groups(['user:read', 'friends', 'item:read', 'item:write'])]
     private ?int $id = null;
 
+    // #[Groups(['user:read', 'user:write', 'item:write'])]
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
+    // #[Groups(['user:read', 'user:write'])]
     #[ORM\Column]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
+    #[Groups(['user:write'])]
     #[ORM\Column]
     private ?string $password = null;
 
+    #[Groups(['user:read', 'user:write', 'friends'])]
     #[ORM\Column(length: 100)]
-    private ?string $firstname = null;
+    private ?string $firstName = null;
 
+    #[Groups(['user:read', 'user:write'])]
     #[ORM\Column(length: 100)]
-    private ?string $lastname = null;
+    private ?string $lastName = null;
 
+    #[Groups(['user:read', 'user:write', 'item:read', 'review:read'])]
     #[ORM\Column(length: 100)]
-    private ?string $username = null;
+    private ?string $userName = null;
 
+    #[Groups(['user:read', 'user:write'])]
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?DateTime $birthDate = null;
+
+    #[Groups(['user:read', 'user:write'])]
     #[ORM\Column(length: 25, nullable: true)]
     private ?string $phone = null;
 
+    #[Groups(['user:read', 'item:read', 'review:read'])]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?Media $userMedia = null;
+    private ?Media $media = null;
 
+    // #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToMany(mappedBy: 'friendshipRequester', targetEntity: Friendship::class, orphanRemoval: true)]
     private Collection $friendshipRequests;
 
+    // #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToMany(mappedBy: 'friendshipAccepter', targetEntity: Friendship::class, orphanRemoval: true)]
     private Collection $friendshipAccepters;
 
+    // #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToMany(mappedBy: 'postedBy', targetEntity: Item::class)]
     private Collection $items;
 
+    // #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToMany(mappedBy: 'postedBy', targetEntity: Review::class, orphanRemoval: true)]
     private Collection $reviews;
 
 
-    public function __construct()
-    {
-        $this->friendshipRequests = new ArrayCollection();
-        $this->friendshipAccepters = new ArrayCollection();
-        $this->items = new ArrayCollection();
-        $this->reviews = new ArrayCollection();
-    }
+    // public function __construct()
+    // {
+    //     $this->friendshipRequests = new ArrayCollection();
+    //     $this->friendshipAccepters = new ArrayCollection();
+    //     $this->items = new ArrayCollection();
+    //     $this->reviews = new ArrayCollection();
+    // }
 
     public function getId(): ?int
     {
@@ -142,38 +209,49 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getFirstname(): ?string
+    public function getFirstName(): ?string
     {
-        return $this->firstname;
+        return $this->firstName;
     }
 
-    public function setFirstname(string $firstname): self
+    public function setFirstName(string $firstName): self
     {
-        $this->firstname = $firstname;
+        $this->firstName = $firstName;
 
         return $this;
     }
 
-    public function getLastname(): ?string
+    public function getLastName(): ?string
     {
-        return $this->lastname;
+        return $this->lastName;
     }
 
-    public function setLastname(string $lastname): self
+    public function setLastName(string $lastName): self
     {
-        $this->lastname = $lastname;
+        $this->lastName = $lastName;
 
         return $this;
     }
 
-    public function getUsername(): ?string
+    public function getUserName(): ?string
     {
-        return $this->username;
+        return $this->userName;
     }
 
-    public function setUsername(string $username): self
+    public function setUserName(string $userName): self
     {
-        $this->username = $username;
+        $this->userName = $userName;
+
+        return $this;
+    }
+
+    public function getBirthDate(): ?\DateTimeInterface
+    {
+        return $this->birthDate;
+    }
+    public function setBirthDate(\DateTimeInterface $birthDate): self
+    {
+        $this->birthDate = $birthDate;
 
         return $this;
     }
@@ -190,14 +268,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getUserMedia(): ?Media
+    public function getmedia(): ?Media
     {
-        return $this->userMedia;
+        return $this->media;
     }
 
-    public function setUserMedia(?Media $userMedia): self
+    public function setmedia(?Media $media): self
     {
-        $this->userMedia = $userMedia;
+        $this->media = $media;
 
         return $this;
     }

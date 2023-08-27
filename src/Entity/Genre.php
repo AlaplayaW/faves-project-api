@@ -4,15 +4,25 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\Timer;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\GenreRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GenreRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
-class Genre
+#[ApiResource(
+    normalizationContext: ['groups' => 'genre:read'],
+    denormalizationContext: ['groups' => 'genre:write'],
+    )]
+    class Genre
 {
     use Timer;
 
@@ -21,6 +31,7 @@ class Genre
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['genre:read', 'itemGenre:read'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 

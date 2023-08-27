@@ -39,6 +39,16 @@ class MovieRepository extends ServiceEntityRepository
         }
     }
 
+    public function findMoviesWithItemDetails()
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.item', 'i')
+            ->addSelect('i')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 //    /**
 //     * @return Movie[] Returns an array of Movie objects
 //     */

@@ -6,10 +6,13 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\Timer;
 use App\Repository\ItemGenreRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ItemGenreRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['itemGenre:read']]
+)]
 class ItemGenre
 {
     use Timer;
@@ -19,13 +22,14 @@ class ItemGenre
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
-
+    // #[Groups(['item:read', 'review:read'])]
     #[ORM\ManyToOne(inversedBy: 'itemGenres')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Item $item = null;
 
+    // #[Groups(['genre:read'])]
+    #[Groups(['genre:read', 'item:read', 'itemGenre:read'])]
+    // #[Groups(['review:read'])]
     #[ORM\ManyToOne(inversedBy: 'itemGenres')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Genre $genre = null;
@@ -33,18 +37,6 @@ class ItemGenre
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
     }
 
     public function getItem(): ?Item
