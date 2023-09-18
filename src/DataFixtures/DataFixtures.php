@@ -9,10 +9,8 @@ namespace App\DataFixtures;
 use App\Entity\Book;
 use App\Entity\Friendship;
 use App\Entity\Genre;
-use App\Entity\Item;
-use App\Entity\ItemGenre;
+use App\Entity\BookGenre;
 use App\Entity\Media;
-use App\Entity\Movie;
 use App\Entity\Review;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -36,15 +34,11 @@ class DataFixtures extends Fixture
     $admin->setEmail('admin@example.com');
     $admin->setRoles(['ROLE_SUPER_ADMIN']);
     $admin->setPassword($this->hasher->hashPassword($admin, 'adminpassword'));
-    $admin->setFirstname('Admin');
-    $admin->setLastname('User');
-    $admin->setUsername('admin');
-    $admin->setPhone('1234567890');
+    $admin->setPseudo('admin');
 
-    
     // On peut ajouter le média si besoin
     $manager->persist($admin);
-    
+
     // Ajouter une référence à l'utilisateur super admin
     $this->addReference('admin_user', $admin);
 
@@ -54,72 +48,55 @@ class DataFixtures extends Fixture
       $user->setEmail('user' . $i . '@example.com');
       $user->setRoles(['ROLE_USER']);
       $user->setPassword($this->hasher->hashPassword($user, 'password' . $i));
-      $user->setFirstname('First name ' . $i);
-      $user->setLastname('Last name ' . $i);
-      $user->setUsername('username' . $i);
-      $user->setPhone('1234567890');
+      $user->setPseudo('userName' . $i);
 
       // Générer un média associé à l'utilisateur
       $media = new Media();
-      $media->setImageUrl("https://example.com/image{$i}.jpg");
-      $user->setUserMedia($media);
+      // Generate a random image URL using Lorem Picsum
+      $imageWidth = 200; // Adjust image width as needed
+      $imageHeight = 200; // Adjust image height as needed
+      $imageUrl = "https://picsum.photos/{$imageWidth}/{$imageHeight}?image={$i}";
+      $media->setImageUrl($imageUrl);
+      $user->setMedia($media);
 
       $manager->persist($user);
 
       // Ajouter une référence à chaque utilisateur
       $this->addReference('user_' . $i, $user);
-
     }
 
-    // Générer 20 items (films ou livres)
+    // Générer 20 books
     for ($i = 1; $i <= 20; $i++) {
-      $item = new Item();
-      $item->setMediaType("mediaType{$i}");
-      $item->setTitle("Title{$i}");
-      $item->setSubtitle("Subtitle{$i}");
-      $item->setDescription("Description{$i}");
-      $item->setPostedBy($this->getReference('user_' . rand(1, 20)));
+      $book = new Book();
+      $book->setTitle("Title{$i}");
+      $book->setSubtitle("Subtitle{$i}");
+      $book->setDescription("Description{$i}");
+      $book->setUser($this->getReference('user_' . rand(1, 20)));
+      $book->setAuthors(["Author{$i}"]);
+      $book->setPublisher("Publisher{$i}");
+      $book->setPublishedDate(DateTime::createFromFormat('Y-m-d', "2023-05-01"));
+      $book->setPageCount($i * 10);
+      $manager->persist($book);
 
-      // Générer un média associé à un item (livre ou film)
+      // Générer un média associé à un book (livre ou film)
       $media = new Media();
       $media->setImageUrl("https://example.com/image{$i}.jpg");
-      $item->setMedia($media);
+      $book->setMedia($media);
 
-      // Générer des genres associés à l'item
+      // Générer des genres associés à l'book
       for ($j = 1; $j <= 3; $j++) {
         $genre = new Genre();
         $genre->setName("Genre{$j}");
         $manager->persist($genre);
 
-        $itemGenre = new ItemGenre();
-        $itemGenre->setName("ItemGenre{$j}");
-        $itemGenre->setItem($item);
-        $itemGenre->setGenre($genre);
-        $manager->persist($itemGenre);
+        $bookGenre = new BookGenre();
+        $bookGenre->setBook($book);
+        $bookGenre->setGenre($genre);
+        $manager->persist($bookGenre);
       }
 
-      // Générer un livre associé à l'item
-      $book = new Book();
-      $book->setAuthors(["Author{$i}"]);
-      $book->setPublisher("Publisher{$i}");
-      $book->setPublishedDate(\DateTime::createFromFormat('Y-m-d', "2023-05-01"));
-      $book->setPageCount($i * 10);
-      $book->setItem($item);
       $manager->persist($book);
-
-      // Générer un film associé à l'item
-      $movie = new Movie();
-      $movie->setType("Type{$i}");
-      $movie->setCasting("Cast{$i}");
-      $movie->setDirectors("Director{$i}");
-      $movie->setYear(\DateTime::createFromFormat('Y', 2000 + $i));
-      $movie->setItem($item);
-      $manager->persist($movie);
-
-      $manager->persist($item);
-
-      $this->addReference('item_' . $i, $item);
-
+      $this->addReference('book_' . $i, $book);
     }
 
     // Générer 20 amitiés entre utilisateurs
@@ -127,8 +104,8 @@ class DataFixtures extends Fixture
       $friendship = new Friendship();
       $requester = $this->getReference('user_' . $i); // Utilisateur qui envoie la demande
       $accepter = $this->getReference('user_' . rand(1, 20)); // Utilisateur qui accepte la demande
-      $friendship->setFriendshipRequester($requester);
-      $friendship->setFriendshipAccepter($accepter);
+      $friendship->setFriendRequester($requester);
+      $friendship->setFriendAccepter($accepter);
 
       $manager->persist($friendship);
     }
@@ -138,14 +115,15 @@ class DataFixtures extends Fixture
       $review = new Review();
       $review->setRating(rand(1, 10));
       $review->setComment("Comment{$i}");
-      $item = $this->getReference('item_' . $i); // Référence à un item existant
-      $review->setItem($item);
+      $book = $this->getReference('book_' . $i); // Référence à un book existant
+      $review->setBook($book);
       $user = $this->getReference('user_' . rand(1, 20)); // Référence à un utilisateur existant
-      $review->setPostedBy($user);
+      $review->setUser($user);
 
       $manager->persist($review);
     }
 
     $manager->flush();
   }
+
 }

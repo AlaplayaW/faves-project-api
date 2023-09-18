@@ -4,13 +4,16 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\Timer;
-use App\Repository\ItemGenreRepository;
+use App\Repository\BookGenreRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ORM\Entity(repositoryClass: ItemGenreRepository::class)]
+#[ORM\Entity(repositoryClass: BookGenreRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
-class ItemGenre
+#[ApiResource(
+    normalizationContext: ['groups' => ['bookGenre:read']]
+)]
+class BookGenre
 {
     use Timer;
 
@@ -19,14 +22,15 @@ class ItemGenre
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
-
-    #[ORM\ManyToOne(inversedBy: 'itemGenres')]
+    // #[Groups(['book:read', 'review:read'])]
+    #[ORM\ManyToOne(inversedBy: 'bookGenres')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Item $item = null;
+    private ?Book $book = null;
 
-    #[ORM\ManyToOne(inversedBy: 'itemGenres')]
+    // #[Groups(['genre:read'])]
+    #[Groups(['genre:read', 'book:read', 'bookGenre:read'])]
+    // #[Groups(['review:read'])]
+    #[ORM\ManyToOne(inversedBy: 'bookGenres')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Genre $genre = null;
 
@@ -35,26 +39,14 @@ class ItemGenre
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getBook(): ?Book
     {
-        return $this->name;
+        return $this->book;
     }
 
-    public function setName(string $name): self
+    public function setBook(?Book $book): self
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getItem(): ?Item
-    {
-        return $this->item;
-    }
-
-    public function setItem(?Item $item): self
-    {
-        $this->item = $item;
+        $this->book = $book;
 
         return $this;
     }

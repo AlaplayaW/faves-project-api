@@ -4,15 +4,25 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\Timer;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\GenreRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: GenreRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
-class Genre
+#[ApiResource(
+    normalizationContext: ['groups' => 'genre:read'],
+    denormalizationContext: ['groups' => 'genre:write'],
+    )]
+    class Genre
 {
     use Timer;
 
@@ -21,15 +31,16 @@ class Genre
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['genre:read', 'bookGenre:read'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'genre', targetEntity: ItemGenre::class, orphanRemoval: true)]
-    private Collection $itemGenres;
+    #[ORM\OneToMany(mappedBy: 'genre', targetEntity: BookGenre::class, orphanRemoval: true)]
+    private Collection $bookGenres;
 
     public function __construct()
     {
-        $this->itemGenres = new ArrayCollection();
+        $this->bookGenres = new ArrayCollection();
     }
 
 
@@ -51,29 +62,29 @@ class Genre
     }
 
     /**
-     * @return Collection<int, ItemGenre>
+     * @return Collection<int, BookGenre>
      */
-    public function getItemGenres(): Collection
+    public function getBookGenres(): Collection
     {
-        return $this->itemGenres;
+        return $this->bookGenres;
     }
 
-    public function addItemGenre(ItemGenre $itemGenre): self
+    public function addBookGenre(BookGenre $bookGenre): self
     {
-        if (!$this->itemGenres->contains($itemGenre)) {
-            $this->itemGenres->add($itemGenre);
-            $itemGenre->setGenre($this);
+        if (!$this->bookGenres->contains($bookGenre)) {
+            $this->bookGenres->add($bookGenre);
+            $bookGenre->setGenre($this);
         }
 
         return $this;
     }
 
-    public function removeItemGenre(ItemGenre $itemGenre): self
+    public function removeBookGenre(BookGenre $bookGenre): self
     {
-        if ($this->itemGenres->removeElement($itemGenre)) {
+        if ($this->bookGenres->removeElement($bookGenre)) {
             // set the owning side to null (unless already changed)
-            if ($itemGenre->getGenre() === $this) {
-                $itemGenre->setGenre(null);
+            if ($bookGenre->getGenre() === $this) {
+                $bookGenre->setGenre(null);
             }
         }
 

@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\ItemGenre;
+use App\Entity\BookGenre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ItemGenre>
+ * @extends ServiceEntityRepository<BookGenre>
  *
- * @method ItemGenre|null find($id, $lockMode = null, $lockVersion = null)
- * @method ItemGenre|null findOneBy(array $criteria, array $orderBy = null)
- * @method ItemGenre[]    findAll()
- * @method ItemGenre[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method BookGenre|null find($id, $lockMode = null, $lockVersion = null)
+ * @method BookGenre|null findOneBy(array $criteria, array $orderBy = null)
+ * @method BookGenre[]    findAll()
+ * @method BookGenre[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ItemGenreRepository extends ServiceEntityRepository
+class BookGenreRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ItemGenre::class);
+        parent::__construct($registry, BookGenre::class);
     }
 
-    public function save(ItemGenre $entity, bool $flush = false): void
+    public function save(BookGenre $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class ItemGenreRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(ItemGenre $entity, bool $flush = false): void
+    public function remove(BookGenre $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class ItemGenreRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return ItemGenre[] Returns an array of ItemGenre objects
+//     * @return BookGenre[] Returns an array of BookGenre objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class ItemGenreRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?ItemGenre
+//    public function findOneBySomeField($value): ?BookGenre
 //    {
 //        return $this->createQueryBuilder('i')
 //            ->andWhere('i.exampleField = :val')

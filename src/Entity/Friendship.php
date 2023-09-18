@@ -4,55 +4,176 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\Timer;
+use App\Entity\User;
 use App\Repository\FriendshipRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Controller\FriendshipController;
+use App\Controller\GetUserFriends;
+use App\Controller\NetworkController;
+use App\Filters\FriendsFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: FriendshipRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['friends']],
+    operations: [
+        new GetCollection(),
+        new GetCollection(
+            name: 'get_friends',
+            uriTemplate: '/friends',
+            controller: FriendshipController::class,
+			openapiContext: ['summary' => "Récupère la liste d'amis validés de l'utilisateur connecté."],
+        ),
+        new GetCollection(
+            name: 'get_friend_requests',
+            uriTemplate: '/friend-requests',
+            controller: FriendshipController::class,
+			openapiContext: ['summary' => "Récupérer la Liste des Demandes d'Amis en Attente."],
+        ),
+    ]
+)]
+
+#[ORM\Index(name: "idx_friend_requester_id", columns: ["friend_requester_id"])]
+#[ORM\Index(name: "idx_friend_accepter_id", columns: ["friend_accepter_id"])]
+// #[ApiFilter(SearchFilter::class, properties: ['friend.id', 'user.id'])]
+// #[ApiFilter(BooleanFilter::class, properties: ['isAccepted'])]
 class Friendship
 {
     use Timer;
 
+    const STATUS_PENDING = 'pending';
+    const STATUS_ACCEPTED = 'accepted';
+    const STATUS_DECLINED = 'declined';
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read', 'user:write'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'friendshipRequests')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $friendshipRequester = null;
+    #[Groups(['user:read', 'friends'])]
+    #[ORM\Column(type: 'string')]
+    private string $status = self::STATUS_PENDING;
 
-    #[ORM\ManyToOne(inversedBy: 'friendshipAccepters')]
+    #[ORM\Column(type: 'datetime', nullable:true)]
+    private $requestDate = null;
+
+    #[ORM\Column(type: 'datetime', nullable:true)]
+    private $acceptanceDate = null;
+
+    #[ORM\Column(type: 'datetime', nullable:true)]
+    private $rejectionDate = null;
+
+    #[ORM\ManyToOne(inversedBy: 'friendRequesters')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $friendshipAccepter = null;
+    private ?User $friendRequester = null;
+
+    #[ORM\ManyToOne(inversedBy: 'friendAccepters')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $friendAccepter = null;
+
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getFriendshipRequester(): ?User
+
+    public function getStatus(): ?string
     {
-        return $this->friendshipRequester;
+        return $this->status;
     }
 
-    public function setFriendshipRequester(?User $friendshipRequester): self
+    public function setStatus(string $status): self
     {
-        $this->friendshipRequester = $friendshipRequester;
+        if (!in_array($status, [self::STATUS_PENDING, self::STATUS_ACCEPTED, self::STATUS_DECLINED])) {
+            throw new \InvalidArgumentException("Invalid status");
+        }
+
+        $this->status = $status;
 
         return $this;
     }
 
-    public function getFriendshipAccepter(): ?User
+    public function getRequestDate(): ?\DateTimeInterface
     {
-        return $this->friendshipAccepter;
+        return $this->requestDate;
     }
 
-    public function setFriendshipAccepter(?User $friendshipAccepter): self
+    public function setRequestDate(?\DateTimeInterface $requestDate): self
     {
-        $this->friendshipAccepter = $friendshipAccepter;
+        $this->requestDate = $requestDate;
+        
+        if ($this->requestDate === null) {
+            $this->requestDate = $this->createdAt;
+        }
 
         return $this;
     }
+
+    public function getAcceptanceDate(): ?\DateTimeInterface
+    {
+        return $this->acceptanceDate;
+    }
+
+    public function setAcceptanceDate(?\DateTimeInterface $acceptanceDate): self
+    {
+        $this->acceptanceDate = $acceptanceDate;
+
+        if ($this->status === self::STATUS_ACCEPTED && $this->acceptanceDate === null) {
+            $this->acceptanceDate = $this->updatedAt;
+        }
+
+        return $this;
+    }
+
+    public function getRejectionDate(): ?\DateTimeInterface
+    {
+        return $this->rejectionDate;
+    }
+
+    public function setRejectionDate(?\DateTimeInterface $rejectionDate): self
+    {
+        $this->rejectionDate = $rejectionDate;
+
+        if ($this->status === self::STATUS_DECLINED && $this->rejectionDate === null) {
+            $this->rejectionDate = $this->updatedAt;
+        }
+
+        return $this;
+    }
+
+    public function getFriendRequester(): ?User
+    {
+        return $this->friendRequester;
+    }
+
+    public function setFriendRequester(?User $friendRequester): self
+    {
+        $this->friendRequester = $friendRequester;
+
+        return $this;
+    }
+
+    public function getFriendAccepter(): ?User
+    {
+        return $this->friendAccepter;
+    }
+
+    public function setFriendAccepter(?User $friendAccepter): self
+    {
+        $this->friendAccepter = $friendAccepter;
+
+        return $this;
+    }
+
 }

@@ -3,18 +3,70 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Controller\GetUserFriends;
 use App\Entity\Traits\Timer;
 use App\Repository\UserRepository;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: '`user`')]
-#[ApiResource]
+#[ApiResource(
+    // normalizationContext: ['groups' => ['user:read', 'friends', 'book:read']],
+    normalizationContext: ['groups' => ['user:read', 'friends']],
+    // denormalizationContext: ['groups' => ['user:write', 'book:write']],
+    operations: [
+            new Get(),
+            new GetCollection(),
+            // new Post(),
+            // new Patch(),
+            // new Put(),
+            // new Delete(),
+            // new GetCollection(
+            //     name: 'api_user_friends',
+            //     uriTemplate: '/users/{id}/friends',
+            //     controller: GetUserFriends::class,
+            //     openapiContext: [
+            //         'summary' => 'Get all requester of a user',
+            //         'description' => '# Get all friends of a user',
+            //     ],
+            // ),
+            // new GetCollection(
+            //     name: 'api_user_friends_demands',
+            //     uriTemplate: '/users/{id}/friendship-demands/recieved',
+            //     openapiContext: [
+            //         'summary' => 'Get all friends of a user',
+            //         'description' => '# Get all friends of a user'
+            //     ],
+            // ),
+        ]
+    )]
+// #[ApiResource(
+//     uriTemplate: '/users/{id}/friends',
+//     uriVariables: [
+//         'userId' => new Link(
+//             fromClass: User::class,
+//             fromProperty: 'id'
+//         )
+//     ], 
+//     operations: [new GetCollection()]
+// )]
+// api/friendships/{userId}/sent-requests
+// api/friendships/{userId}/recieved-requests
+#[ORM\Index(name: "idx_user_id", columns: ["id"])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Timer;
@@ -22,56 +74,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
+    #[Groups(['user:read', 'user:write', 'book:write'])]
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
+    #[Groups(['user:read', 'user:write'])]
     #[ORM\Column]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
+    #[Groups(['user:write'])]
     #[ORM\Column]
     private ?string $password = null;
 
+    #[Groups(['user:read', 'user:write', 'book:read', 'review:read'])]
     #[ORM\Column(length: 100)]
-    private ?string $firstname = null;
+    private ?string $pseudo = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $lastname = null;
-
-    #[ORM\Column(length: 100)]
-    private ?string $username = null;
-
-    #[ORM\Column(length: 25, nullable: true)]
-    private ?string $phone = null;
-
+    #[Groups(['user:read', 'user:write', 'book:read', 'review:read'])]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?Media $userMedia = null;
+    private ?Media $media = null;
 
-    #[ORM\OneToMany(mappedBy: 'friendshipRequester', targetEntity: Friendship::class, orphanRemoval: true)]
-    private Collection $friendshipRequests;
+    #[Groups(['user:read', 'user:write'])]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Book ::class)]
+    private Collection $books;
 
-    #[ORM\OneToMany(mappedBy: 'friendshipAccepter', targetEntity: Friendship::class, orphanRemoval: true)]
-    private Collection $friendshipAccepters;
-
-    #[ORM\OneToMany(mappedBy: 'postedBy', targetEntity: Item::class)]
-    private Collection $items;
-
-    #[ORM\OneToMany(mappedBy: 'postedBy', targetEntity: Review::class, orphanRemoval: true)]
+    #[Groups(['user:read', 'user:write'])]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, orphanRemoval: true)]
     private Collection $reviews;
+
+    #[ORM\OneToMany(mappedBy: 'friendRequester', targetEntity: Friendship::class, orphanRemoval: true)]
+    private Collection $friendRequesters;
+
+    #[ORM\OneToMany(mappedBy: 'friendAccepter', targetEntity: Friendship::class, orphanRemoval: true)]
+    private Collection $friendAccepters;
 
 
     public function __construct()
     {
-        $this->friendshipRequests = new ArrayCollection();
-        $this->friendshipAccepters = new ArrayCollection();
-        $this->items = new ArrayCollection();
-        $this->reviews = new ArrayCollection();
+        $this->friendRequesters = new ArrayCollection();
+        $this->friendAccepters = new ArrayCollection();
     }
-
+    
     public function getId(): ?int
     {
         return $this->id;
@@ -142,150 +191,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getFirstname(): ?string
+
+    public function getPseudo(): ?string
     {
-        return $this->firstname;
+        return $this->pseudo;
     }
 
-    public function setFirstname(string $firstname): self
+    public function setPseudo(string $pseudo): self
     {
-        $this->firstname = $firstname;
+        $this->pseudo = $pseudo;
 
         return $this;
     }
 
-    public function getLastname(): ?string
+    public function getmedia(): ?Media
     {
-        return $this->lastname;
+        return $this->media;
     }
 
-    public function setLastname(string $lastname): self
+    public function setmedia(?Media $media): self
     {
-        $this->lastname = $lastname;
-
-        return $this;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(string $username): self
-    {
-        $this->username = $username;
-
-        return $this;
-    }
-
-    public function getPhone(): ?string
-    {
-        return $this->phone;
-    }
-
-    public function setPhone(?string $phone): self
-    {
-        $this->phone = $phone;
-
-        return $this;
-    }
-
-    public function getUserMedia(): ?Media
-    {
-        return $this->userMedia;
-    }
-
-    public function setUserMedia(?Media $userMedia): self
-    {
-        $this->userMedia = $userMedia;
+        $this->media = $media;
 
         return $this;
     }
 
     /**
-     * @return Collection<int, Friendship>
+     * @return Collection<int, Book>
      */
-    public function getFriendshipRequests(): Collection
+    public function getBooks(): Collection
     {
-        return $this->friendshipRequests;
+        return $this->books;
     }
 
-    public function addFriendshipRequest(Friendship $friendshipRequest): self
+    public function addBook(Book $book): self
     {
-        if (!$this->friendshipRequests->contains($friendshipRequest)) {
-            $this->friendshipRequests->add($friendshipRequest);
-            $friendshipRequest->setFriendshipRequester($this);
+        if (!$this->books->contains($book)) {
+            $this->books->add($book);
+            $book->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeFriendshipRequest(Friendship $friendshipRequest): self
+    public function removeBook(Book $book): self
     {
-        if ($this->friendshipRequests->removeElement($friendshipRequest)) {
+        if ($this->books->removeElement($book)) {
             // set the owning side to null (unless already changed)
-            if ($friendshipRequest->getFriendshipRequester() === $this) {
-                $friendshipRequest->setFriendshipRequester(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Friendship>
-     */
-    public function getFriendshipAccepters(): Collection
-    {
-        return $this->friendshipAccepters;
-    }
-
-    public function addFriendshipAccepter(Friendship $friendshipAccepter): self
-    {
-        if (!$this->friendshipAccepters->contains($friendshipAccepter)) {
-            $this->friendshipAccepters->add($friendshipAccepter);
-            $friendshipAccepter->setFriendshipAccepter($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFriendshipAccepter(Friendship $friendshipAccepter): self
-    {
-        if ($this->friendshipAccepters->removeElement($friendshipAccepter)) {
-            // set the owning side to null (unless already changed)
-            if ($friendshipAccepter->getFriendshipAccepter() === $this) {
-                $friendshipAccepter->setFriendshipAccepter(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Item>
-     */
-    public function getItems(): Collection
-    {
-        return $this->items;
-    }
-
-    public function addItem(Item $item): self
-    {
-        if (!$this->items->contains($item)) {
-            $this->items->add($item);
-            $item->setPostedBy($this);
-        }
-
-        return $this;
-    }
-
-    public function removeItem(Item $item): self
-    {
-        if ($this->items->removeElement($item)) {
-            // set the owning side to null (unless already changed)
-            if ($item->getPostedBy() === $this) {
-                $item->setPostedBy(null);
+            if ($book->getUser() === $this) {
+                $book->setUser(null);
             }
         }
 
@@ -304,7 +258,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->reviews->contains($review)) {
             $this->reviews->add($review);
-            $review->setPostedBy($this);
+            $review->setUser($this);
         }
 
         return $this;
@@ -314,8 +268,68 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->reviews->removeElement($review)) {
             // set the owning side to null (unless already changed)
-            if ($review->getPostedBy() === $this) {
-                $review->setPostedBy(null);
+            if ($review->getUser() === $this) {
+                $review->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Friendship>
+     */
+    public function getFriendRequesters(): Collection
+    {
+        return $this->friendRequesters;
+    }
+
+    public function addFriendRequester(Friendship $friendRequester): self
+    {
+        if (!$this->friendRequesters->contains($friendRequester)) {
+            $this->friendRequesters->add($friendRequester);
+            $friendRequester->setFriendRequester($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendRequester(Friendship $friendRequester): self
+    {
+        if ($this->friendRequesters->removeElement($friendRequester)) {
+            // set the owning side to null (unless already changed)
+            if ($friendRequester->getFriendRequester() === $this) {
+                $friendRequester->setFriendRequester(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Friendship>
+     */
+    public function getFriendAccepter(): Collection
+    {
+        return $this->friendAccepters;
+    }
+
+    public function addFriendAccepter(Friendship $friendAccepter): self
+    {
+        if (!$this->friendAccepters->contains($friendAccepter)) {
+            $this->friendAccepters->add($friendAccepter);
+            $friendAccepter->setFriendAccepter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendAccepter(Friendship $friendAccepter): self
+    {
+        if ($this->friendAccepters->removeElement($friendAccepter)) {
+            // set the owning side to null (unless already changed)
+            if ($friendAccepter->getFriendAccepter() === $this) {
+                $friendAccepter->setFriendAccepter(null);
             }
         }
 
@@ -323,3 +337,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
 }
+
+// Je veux récupérer tous les livres (et leurs reviews) qui ont été commentés par un de mes amis.
+// Le but est d'afficher une liste de livres avec pour chaque livre, tous les commentaires affiches par mes amis.
+// Si le meme livre est commenté par plusieurs amis, je veux que le livre n'apparaisse qu'une seule fois, et que tous les commentaires soient visibles quand on clique sur le livre.
+// La liste des livres doit faire apparaitre en 1er le livre qui a été commenté le plus récemment par un ami.

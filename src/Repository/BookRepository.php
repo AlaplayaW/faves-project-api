@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Genre;
 use App\Entity\Book;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -39,28 +40,101 @@ class BookRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Book[] Returns an array of Book objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('b')
-//            ->andWhere('b.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('b.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function findReviewsByUserFriends(int $userId): array
+    {
+        // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté
 
-//    public function findOneBySomeField($value): ?Book
-//    {
-//        return $this->createQueryBuilder('b')
-//            ->andWhere('b.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        // Exemple de requête (à personnaliser en fonction de votre modèle de données)
+        $qb = $this->createQueryBuilder('b')
+            ->join('b.reviews', 'r')
+            ->join('r.user', 'u')
+            ->join('u.friendAccepters', 'f')
+            ->where('f.status = :status')
+            ->andWhere('(f.friendRequester = :user AND f.friendAccepter = u) OR (f.friendAccepter = :user AND f.friendRequester = u)')
+            ->orderBy('r.createdAt', 'DESC')
+            ->setParameter('status', 'accepted')
+            ->setParameter('user', $userId);
+
+        return $qb->getQuery()->getResult();
+    }
+    
+    // /**
+    //  * @return Genre[] Returns an array of Genre objects for an Book ID
+    //  */
+    // public function findGenresByBook($bookId)
+    // {
+    //     return $this->createQueryBuilder('g')
+    //         ->select('g')
+    //         ->leftJoin('g.bookGenres', 'bookg')
+    //         ->leftJoin('bookg.book', 'book')
+    //         ->where('book.id = :bookId')
+    //         ->setParameter('bookId', $bookId)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
+
+
+    // public function findByFriendIds(array $friendIds)
+    // {
+    //     return $this->createQueryBuilder('book')
+    //         ->select('book')
+    //         ->join('book.user', 'user')
+    //         ->where('user.id IN (:friendIds)')
+    //         ->setParameter('friendIds', $friendIds)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
+
+    // public function findByCurrentUserFriends(int $userId)
+    // {
+    //     return $this->createQueryBuilder('book')
+    //         ->select('book')
+    //         ->join('book.user', 'user')
+    //         ->join('user.friends', 'friend')
+    //         ->where('friend.id = :userId')
+    //         ->setParameter('userId', $userId)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
+
+    // public function findBooksAndReviewsByFriends(int $userId)
+    // {
+    //     return $this->createQueryBuilder('review')
+    //         ->select('book.id AS bookId', 'book.title', 'review.rating', 'review.comment', 'review.createdAt')
+    //         ->join('review.book', 'book')
+    //         ->join('review.user', 'user')
+    //         ->join('user.friendshipRequests', 'requester', 'WITH', 'requester.friendshipAccepter = :user AND requester.isAccepted = true')
+    //         ->join('user.friendshipAccepters', 'accepter', 'WITH', 'accepter.friendshipRequester = :user AND accepter.isAccepted = true')
+    //         ->where('requester.id IS NOT NULL OR accepter.id IS NOT NULL')
+    //         ->setParameter('userId', $userId)
+    //         ->orderBy('review.createdAt', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
+
+
+    //    /**
+    //     * @return Book[] Returns an array of Book objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('i')
+    //            ->andWhere('i.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('i.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Book
+    //    {
+    //        return $this->createQueryBuilder('i')
+    //            ->andWhere('i.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }
