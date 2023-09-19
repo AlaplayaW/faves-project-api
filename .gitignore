@@ -1,15 +1,25 @@
-
 ###> symfony/framework-bundle ###
-/.env
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
+.env
+.env.local
+.env.local.php
+.env.*.local
+bin/
+./config/secrets/prod/prod.decrypt.private.php
+public/bundles/
+var/
+vendor/
+vscode/
+.vscode/
 ###< symfony/framework-bundle ###
 
-###> lexik/jwt-authentication-bundle ###
-/config/jwt/*.pem
-###< lexik/jwt-authentication-bundle ###
+
+###> league/oauth2-server-bundle ###
+config/jwt/*.pem
+###< league/oauth2-server-bundle ###
+
+###> private fixtures ###
+CSVfiles/
+###> private fixtures ###
+
+docker-compose.yml
+docker-compose.override.yml
