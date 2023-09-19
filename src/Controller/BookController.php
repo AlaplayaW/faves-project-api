@@ -30,7 +30,7 @@ class BookController extends AbstractController
         $userId = $user->getId();
 
     // Code pour récupérer la liste des livres commentés par les amis de l'utilisateur actuellement connecté
-    $booksReviews = $this->bookService->getBooksReviewsByFriends($userId);
+    $booksReviews = $this->bookService->getBooksByNetwork($userId);
 
     return $this->json($booksReviews);
   }

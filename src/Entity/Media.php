@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-    normalizationContext: ['groups' => 'item:read'],
+    // normalizationContext: ['groups' => 'item:read'],
     operations: [
         new Get(),
         new GetCollection(),
@@ -36,7 +36,7 @@ class Media
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['item:read', 'user:read', 'review:read'])]
+    #[Groups(['user:read', 'review:read'])]
     #[ORM\Column(length: 255)]
     private ?string $imageUrl = null;
 

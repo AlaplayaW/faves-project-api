@@ -2,14 +2,10 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Traits\Timer;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Controller\NetworkController;
@@ -56,23 +52,23 @@ class Review
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['review:read'])]
+    #[Groups(['review:read', 'booksAndReviewsByFriends:read', 'booksAndReviewsByFriends:write'])]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'review:read'])]
+    #[Groups(['review:read'])]
     #[ORM\Column]
     private ?int $rating = null;
 
-    #[Groups(['user:read', 'review:read'])]
+    #[Groups(['review:read', 'booksAndReviewsByFriends:read', 'booksAndReviewsByFriends:write'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['user:read', 'review:read'])]
+    // #[Groups(['review:read'])]
     private ?Book $book = null;
 
-    #[Groups(['user:read', 'review:read'])]
+    #[Groups(['review:read'])]
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;

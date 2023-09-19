@@ -5,12 +5,6 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use App\Controller\GetUserFriends;
 use App\Entity\Traits\Timer;
 use App\Repository\UserRepository;
 use DateTime;
@@ -26,7 +20,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Table(name: '`user`')]
 #[ApiResource(
     // normalizationContext: ['groups' => ['user:read', 'friends', 'book:read']],
-    normalizationContext: ['groups' => ['user:read', 'friends']],
+    normalizationContext: ['groups' => ['user:read']],
     // denormalizationContext: ['groups' => ['user:write', 'book:write']],
     operations: [
             new Get(),
@@ -74,10 +68,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read'])]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'user:write', 'book:write'])]
+    #[Groups(['user:read', 'user:write'])]
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
@@ -92,11 +85,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['user:read', 'user:write', 'book:read', 'review:read'])]
+    #[Groups(['user:read', 'user:write'])]
     #[ORM\Column(length: 100)]
     private ?string $pseudo = null;
 
-    #[Groups(['user:read', 'user:write', 'book:read', 'review:read'])]
+    #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Media $media = null;
 

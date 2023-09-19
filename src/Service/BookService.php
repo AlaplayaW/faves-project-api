@@ -83,10 +83,10 @@ class BookService
     /**
      * @return Collection|Review[]
      */
-    public function getBooksReviewsByFriends(int $userId): Collection | array
+    public function getBooksByNetwork(int $userId): Collection | array
     {
         // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté
-      $booksReviews = $this->bookRepository->findReviewsByUserFriends($userId);
+      $booksReviews = $this->bookRepository->findBooksByNetwork($userId);
 
         return $booksReviews;
     }

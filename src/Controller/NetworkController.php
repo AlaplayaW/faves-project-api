@@ -3,12 +3,13 @@ namespace App\Controller;
 
 use App\Service\FriendshipService;
 use App\Service\BookService;
-use App\Service\NetworkService;
 use App\Service\ReviewService;
+use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 #[AsController]
 class NetworkController extends AbstractController
@@ -17,18 +18,32 @@ class NetworkController extends AbstractController
     private $friendshipService;
     private $reviewService;
     private $bookService;
-    private $networkService;
+    private $userService;
 
     public function __construct(
         FriendshipService $friendshipService,
         ReviewService $reviewService,
         BookService $bookService,
-        NetworkService $networkService
+        UserService $userService
     ) {
         $this->friendshipService = $friendshipService;
         $this->reviewService = $reviewService;
         $this->bookService = $bookService;
-        $this->networkService = $networkService;
+        $this->userService = $userService;
+    }
+
+    // Recupère les livres postés par les amis
+    #[Route('/api/network/books', name: 'get_books_by_network', methods: ['GET']) ]
+    public function getBooksByNetwork(): JsonResponse
+    {
+
+        // Récupérez l'ID de l'utilisateur actuellement connecté
+        $user = $this->userService->getLoggedIndUser();
+        $userId = $user->getId();
+
+        $books = $this->bookService->getBooksByNetwork($userId);
+
+        return $this->json($books);
     }
 
     // Recupère les amis du user connecté

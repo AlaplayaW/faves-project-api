@@ -2,7 +2,6 @@
 
 namespace App\Repository;
 
-use App\Entity\Genre;
 use App\Entity\Book;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -40,11 +39,10 @@ class BookRepository extends ServiceEntityRepository
         }
     }
 
-    public function findReviewsByUserFriends(int $userId): array
+    public function findBooksByNetwork(int $userId): array
     {
         // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté
 
-        // Exemple de requête (à personnaliser en fonction de votre modèle de données)
         $qb = $this->createQueryBuilder('b')
             ->join('b.reviews', 'r')
             ->join('r.user', 'u')
@@ -58,6 +56,30 @@ class BookRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
     
+    // public function findReviewsByUserFriends(int $userId)
+    // {
+    //     $connection = $this->getEntityManager()->getConnection();
+
+    //     $sql = '
+    //     SELECT b.title, r.comment
+    //     FROM book b
+    //     INNER JOIN review r ON b.id = r.book_id
+    //     INNER JOIN "user" u ON r.user_id = u.id
+    //     INNER JOIN friendship f ON (
+    //         (f.status = :status AND f.friend_requester_id = :user AND f.friend_accepter_id = u.id)
+    //         OR
+    //         (f.status = :status AND f.friend_requester_id = u.id AND f.friend_accepter_id = :user)
+    //     )
+    //     ORDER BY r.created_at DESC;
+    // ';
+
+    //     $statement = $connection->prepare($sql);
+    //     $statement->bindValue('user', $userId, \PDO::PARAM_INT); // \PDO::PARAM_INT pour valeurs entières
+    //     $statement->bindValue('status', 'accepted');
+    //     $res = $statement->executeQuery();
+    //     return $res->fetchAllAssociative();
+    // }
+
     // /**
     //  * @return Genre[] Returns an array of Genre objects for an Book ID
     //  */

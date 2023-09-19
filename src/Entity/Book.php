@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
 use App\Controller\BooksAndReviewsByFriendsController;
 use App\Entity\Traits\Timer;
 use App\Repository\BookRepository;
@@ -16,22 +17,25 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-	normalizationContext: ['groups' => ['book:read', 'user:read']],
-	// denormalizationContext: ['groups' => ['book:write']],
+	normalizationContext: ['groups' => ['book:read']],
+	denormalizationContext: ['groups' => ['book:write']],
 	// outputFormats: ['json'],
 
 	operations: [
 		new GetCollection(
+			normalizationContext: ['groups' => ['booksAndReviewsByFriends:read']],
+			denormalizationContext: ['groups' => ['booksAndReviewsByFriends:write']],
 			name: 'booksAndReviewsByFriends',
 			uriTemplate: '/books/reviews-by-friends',
 			controller: BooksAndReviewsByFriendsController::class,
 			openapiContext: ['summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté"],
 		),
-		// new Get(),
+		new Get(),
 		// new GetCollection(
-		//     name: 'get_books_posted_by_user',
+		//     name: 'get_books_by_network',
 		//     uriTemplate: '/network/books',
 		//     controller: NetworkController::class,
+		// 		openapiContext: ['summary' => "Récupérer la Liste des Demandes d'Amis en Attente."],
 		// ),
 		// new Post(
 		// outputFormats: ['json']
@@ -50,7 +54,7 @@ class Book
 	#[ORM\Column]
 	private ?int $id = null;
 
-	#[Groups(['book:read', 'review:read', 'book:write'])]
+	#[Groups(['book:read', 'book:write', 'booksAndReviewsByFriends:read', 'booksAndReviewsByFriends:write'])]
 	#[ORM\Column(length: 255, nullable: true)]
 	private ?string $title = null;
 
@@ -84,20 +88,20 @@ class Book
 
 	#[ORM\ManyToOne(inversedBy: 'books')]
 	#[ORM\JoinColumn(nullable: false)]
-	#[Groups(['book:read', 'book:write', 'user:read'])]
+	#[Groups(['book:read', 'book:write'])]
 	private ?User $user = null;
 
 	#[ORM\OneToOne(cascade: ['persist', 'remove'])]
 	#[Groups(['book:read', 'book:write'])]
 	private ?Media $media = null;
 
-	#[Groups(['book:read'])]
+	#[Groups(['book:read', 'booksAndReviewsByFriends:read', 'booksAndReviewsByFriends:write'])]
 	#[ORM\OneToMany(mappedBy: 'book', targetEntity: Review::class, orphanRemoval: true)]
 	private Collection $reviews;
 
 	#[Groups(['book:read'])]
 	#[ORM\OneToMany(mappedBy: 'book', targetEntity: BookGenre::class, orphanRemoval: true)]
-	private Collection $bookCategories;
+	private Collection $bookGenres;
 
 
 	/**
@@ -328,16 +332,16 @@ class Book
 	 */
 	public function getBookGenres(): Collection
 	{
-		return $this->bookCategories;
+		return $this->bookGenres;
 	}
 
 	/**
-	 * @param Collection $bookCategories 
+	 * @param Collection $bookGenres 
 	 * @return self
 	 */
-	public function setBookGenres(Collection $bookCategories): self
+	public function setBookGenres(Collection $bookGenres): self
 	{
-		$this->bookCategories = $bookCategories;
+		$this->bookGenres = $bookGenres;
 		return $this;
 	}
 
