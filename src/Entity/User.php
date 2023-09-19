@@ -85,7 +85,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'reviewsByNetwork:read'])]
     #[ORM\Column(length: 100)]
     private ?string $pseudo = null;
 
@@ -93,11 +93,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Media $media = null;
 
-    #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Book ::class)]
     private Collection $books;
 
-    #[Groups(['user:read', 'user:write'])]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, orphanRemoval: true)]
     private Collection $reviews;
 

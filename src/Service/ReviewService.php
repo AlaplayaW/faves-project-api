@@ -46,10 +46,10 @@ class ReviewService
    * @param int $userId Liste des IDs des amis du user connecté
    * @return Review[] Tableau contenant les reviews postées par les amis
    */
-  public function findReviewsByUserFriends(int $userId): array
+  public function getReviewsByNetwork(int $userId): array
   {
           // Récupérer toutes les reviews où l'utilisateur a posté un avis
-          $reviews = $this->reviewRepository->findReviewsByUserFriends($userId);
+          $reviews = $this->reviewRepository->findReviewsByNetwork($userId);
 
           return $reviews;
   }

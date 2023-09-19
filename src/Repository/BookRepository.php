@@ -41,7 +41,7 @@ class BookRepository extends ServiceEntityRepository
 
     public function findBooksByNetwork(int $userId): array
     {
-        // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté
+        // Code pour récupérer la liste des livres postés par les amis de l'utilisateur connecté
 
         $qb = $this->createQueryBuilder('b')
             ->join('b.reviews', 'r')

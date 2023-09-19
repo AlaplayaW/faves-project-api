@@ -30,14 +30,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
             name: 'get_friends',
             uriTemplate: '/friends',
             controller: FriendshipController::class,
-			openapiContext: ['summary' => "Récupère la liste d'amis validés de l'utilisateur connecté."],
+            openapiContext: ['summary' => "Récupère la liste d'amis validés de l'utilisateur connecté."],
         ),
         new GetCollection(
             name: 'get_friend_requests',
             uriTemplate: '/friend-requests',
             controller: FriendshipController::class,
-			openapiContext: ['summary' => "Récupérer la Liste des Demandes d'Amis en Attente."],
-        ),
+            openapiContext: ['summary' => "Récupérer la Liste des Demandes d'Amis en Attente."],
+        )
     ]
 )]
 
@@ -64,13 +64,13 @@ class Friendship
     #[ORM\Column(type: 'string')]
     private string $status = self::STATUS_PENDING;
 
-    #[ORM\Column(type: 'datetime', nullable:true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private $requestDate = null;
 
-    #[ORM\Column(type: 'datetime', nullable:true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private $acceptanceDate = null;
 
-    #[ORM\Column(type: 'datetime', nullable:true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private $rejectionDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'friendRequesters')]
@@ -112,7 +112,7 @@ class Friendship
     public function setRequestDate(?\DateTimeInterface $requestDate): self
     {
         $this->requestDate = $requestDate;
-        
+
         if ($this->requestDate === null) {
             $this->requestDate = $this->createdAt;
         }
@@ -175,5 +175,4 @@ class Friendship
 
         return $this;
     }
-
 }

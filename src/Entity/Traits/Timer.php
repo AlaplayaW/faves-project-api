@@ -11,11 +11,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 trait Timer {
 
-    #[Groups(['review:read'])]
+    #[Groups(['time:read'])]
     #[ORM\Column(type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private $createdAt;
     
-    // #[Groups(['time', 'time:read'])]
+    #[Groups(['time:read'])]
     #[ORM\Column(type: 'datetime', nullable: true)]
     private $updatedAt;
 

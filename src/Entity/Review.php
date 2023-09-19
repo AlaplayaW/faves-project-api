@@ -25,6 +25,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
         // new Put(),
         // new Delete(),
         new GetCollection(),
+        new GetCollection(
+			normalizationContext: ['groups' => ['review:read', 'reviewsByNetwork:read']],
+			name: 'get_reviews_by_network',
+			uriTemplate: '/network/reviews',
+			controller: NetworkController::class,
+			openapiContext: ['summary' => "Récupère la liste des critiques des amis de l'utilisateur actuellement connecté"],
+	),
         // new GetCollection(
         //     name: 'api_users_reviews',
         //     uriTemplate: '/reviews/users/',
@@ -52,23 +59,23 @@ class Review
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['review:read', 'booksAndReviewsByFriends:read', 'booksAndReviewsByFriends:write'])]
+    #[Groups(['review:read'])]
     private ?int $id = null;
 
-    #[Groups(['review:read'])]
+    #[Groups(['review:read', 'booksByNetwork:read'])]
     #[ORM\Column]
     private ?int $rating = null;
 
-    #[Groups(['review:read', 'booksAndReviewsByFriends:read', 'booksAndReviewsByFriends:write'])]
+    #[Groups(['review:read', 'booksByNetwork:read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
+    #[Groups(['reviewsByNetwork:read'])]
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
-    // #[Groups(['review:read'])]
     private ?Book $book = null;
 
-    #[Groups(['review:read'])]
+    #[Groups(['reviewsByNetwork:read'])]
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
