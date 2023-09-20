@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Action\NotFoundAction;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
+use App\Controller\CurrentUserController;
 use App\Entity\Traits\Timer;
 use App\Repository\UserRepository;
 use DateTime;
@@ -21,10 +23,24 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     // normalizationContext: ['groups' => ['user:read', 'friends', 'book:read']],
     normalizationContext: ['groups' => ['user:read']],
+    // security: 'is_granted("ROLE_USER")',
     // denormalizationContext: ['groups' => ['user:write', 'book:write']],
     operations: [
-            new Get(),
-            new GetCollection(),
+            new Get(
+                controller: NotFoundAction::class,
+                openapiContext: [ 'summary' => 'hidden'],
+                read: false,
+                output: false 
+            ),
+            new GetCollection(
+                paginationEnabled: false,
+                uriTemplate: '/current-user',
+                controller: CurrentUserController::class,
+                read: false,
+                openapiContext: [
+                    'security' => [['JWT' => []]]
+                ]
+            ),
             // new Post(),
             // new Patch(),
             // new Put(),
@@ -68,6 +84,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[Groups(['user:read', 'user:write'])]
