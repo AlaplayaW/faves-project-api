@@ -36,7 +36,7 @@ class Media
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'review:read'])]
+    #[Groups(['user:read', 'review:read', 'book:read'])]
     #[ORM\Column(length: 255)]
     private ?string $imageUrl = null;
 

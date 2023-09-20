@@ -31,7 +31,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['genre:read', 'bookGenre:read'])]
+    #[Groups(['genre:read', 'bookGenre:read', 'booksByNetwork:read'])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 

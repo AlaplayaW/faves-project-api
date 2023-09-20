@@ -28,7 +28,7 @@ class BookGenre
     private ?Book $book = null;
 
     // #[Groups(['genre:read'])]
-    #[Groups(['bookGenre:read'])]
+    #[Groups(['bookGenre:read', 'booksByNetwork:read'])]
     // #[Groups(['review:read'])]
     #[ORM\ManyToOne(inversedBy: 'bookGenres')]
     #[ORM\JoinColumn(nullable: false)]

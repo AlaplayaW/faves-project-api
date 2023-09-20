@@ -85,11 +85,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['user:read', 'user:write', 'reviewsByNetwork:read'])]
+    #[Groups(['user:read', 'user:write', 'reviewsByNetwork:read', 'booksByNetwork:read'])]
     #[ORM\Column(length: 100)]
     private ?string $pseudo = null;
 
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'booksByNetwork:read'])]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Media $media = null;
 

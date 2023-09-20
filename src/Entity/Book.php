@@ -18,13 +18,13 @@ use App\Controller\NetworkController;
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-	normalizationContext: ['groups' => ['book:read']],
+	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
 
 	operations: [
 		new Get(),
 		new GetCollection(
-			normalizationContext: ['groups' => ['booksByNetwork:read']],
+			normalizationContext: ['groups' => ['book:read', 'booksByNetwork:read']],
 			name: 'get_books_by_network',
 			uriTemplate: '/network/books',
 			controller: NetworkController::class,
@@ -47,7 +47,7 @@ class Book
 	#[ORM\Column]
 	private ?int $id = null;
 
-	#[Groups(['book:read', 'book:write', 'booksByNetwork:read', 'reviewsByNetwork:read'])]
+	#[Groups(['book:read', 'book:write', 'reviewsByNetwork:read'])]
 	#[ORM\Column(length: 255, nullable: true)]
 	private ?string $title = null;
 
@@ -88,7 +88,7 @@ class Book
 	#[Groups(['book:read', 'book:write'])]
 	private ?Media $media = null;
 
-	#[Groups(['book:read', 'booksByNetwork:read'])]
+	#[Groups(['book:read'])]
 	#[ORM\OneToMany(mappedBy: 'book', targetEntity: Review::class, orphanRemoval: true)]
 	private Collection $reviews;
 
@@ -346,7 +346,7 @@ class Book
 	 *
 	 * @Groups({"item:read"})
 	 */
-	// #[Groups(['item:read'])]
+	#[Groups(['book:read'])]
 	public function getAverageRating(): ?float
 	{
 		return $this->calculateAverageRating();

@@ -22,8 +22,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Get(),
         new Post(),
-        // new Put(),
-        // new Delete(),
         new GetCollection(),
         new GetCollection(
 			normalizationContext: ['groups' => ['review:read', 'reviewsByNetwork:read']],
@@ -75,7 +73,7 @@ class Review
     #[ORM\JoinColumn(nullable: false)]
     private ?Book $book = null;
 
-    #[Groups(['reviewsByNetwork:read'])]
+    #[Groups(['reviewsByNetwork:read', 'booksByNetwork:read'])]
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;

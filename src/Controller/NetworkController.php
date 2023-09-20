@@ -48,7 +48,7 @@ class NetworkController extends AbstractController
         $books = $this->bookService->getBooksByNetwork($this->user->getId());
 
         // converti $booksReviews en format JSON avec les groupes de sérialisation associés à 'book:read'.
-        $jsonBookList = $this->serializer->serialize($books, 'json', ['groups' => 'booksByNetwork:read']);
+        $jsonBookList = $this->serializer->serialize($books, 'json', ['groups' => ['book:read', 'booksByNetwork:read', 'time:read']]);
         return new JsonResponse($jsonBookList, Response::HTTP_OK, [], true);
     }
 
