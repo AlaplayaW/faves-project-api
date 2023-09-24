@@ -7,22 +7,32 @@ use App\Repository\FriendshipRepository;
 use App\Repository\UserRepository;
 use App\Entity\User;
 use App\Repository\BookRepository;
+use Doctrine\Common\Collections\Collection;
 
 class FriendshipService
 {
   private FriendshipRepository $friendshipRepository;
   private UserRepository $userRepository;
   private NetworkService $networkService;
-  private BookRepository $bookRepository;
 
 
-  public function __construct(NetworkService $networkService, FriendshipRepository $friendshipRepository, UserRepository $userRepository, BookRepository $bookRepository)
+  public function __construct(NetworkService $networkService, FriendshipRepository $friendshipRepository, UserRepository $userRepository)
   {
     $this->friendshipRepository = $friendshipRepository;
     $this->userRepository = $userRepository;
     $this->networkService = $networkService;
-    $this->bookRepository = $bookRepository;
   }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getFriendsByNetwork(int $userId): Collection | array
+    {
+        // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté
+      $friends = $this->friendshipRepository->findFriendsByNetwork($userId);
+
+      return $friends;
+    }
 
   // /**
   //  * @return User[]
@@ -43,13 +53,13 @@ class FriendshipService
   // }
 
 
-  public function getValidatedFriends(int $userId): array
-  {
-      // Code pour récupérer la liste d'amis validés de l'utilisateur connecté
-      $validatedFriends = $this->friendshipRepository->findValidatedFriends($userId);
+  // public function getValidatedFriends(int $userId): array
+  // {
+  //     // Code pour récupérer la liste d'amis validés de l'utilisateur connecté
+  //     $validatedFriends = $this->friendshipRepository->findValidatedFriends($userId);
 
-      return $validatedFriends;
-  }
+  //     return $validatedFriends;
+  // }
 
   public function getFriendRequests(int $userId): array
   {

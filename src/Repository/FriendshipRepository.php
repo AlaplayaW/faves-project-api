@@ -40,7 +40,7 @@ class FriendshipRepository extends ServiceEntityRepository
         }
     }
 
-    public function findValidatedFriends(int $userId): array
+    public function findFriendsByNetwork(int $userId): array
     {
         // Code pour récupérer la liste d'amis validés de l'utilisateur connecté
 

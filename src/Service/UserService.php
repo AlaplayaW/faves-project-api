@@ -5,21 +5,27 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\UserNotFoundException;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class UserService
 {
-    private $entityManager;
     private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository)
+    private Security $security;
+
+    public function __construct(UserRepository $userRepository, Security $security )
     {
-        $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
+        $this->security = $security;
     }
 
     public function getLoggedIndUser(): User
     {
-        $user = $this->userRepository->findOneBy(['id' => 3]);
+        $userFromToken = $this->security->getUser();
+        dd($userFromToken);
+        //Récupérer les informations du user à partir de son username
+        $user = $this->userRepository->findOneBy(['email' => $userFromToken->getUserIdentifier()]);
 
         return $user;
     }

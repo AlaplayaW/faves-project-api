@@ -6,64 +6,71 @@ use ApiPlatform\Action\NotFoundAction;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use App\Controller\CurrentUserController;
 use App\Entity\Traits\Timer;
+use App\Entity\Review;
 use App\Repository\UserRepository;
-use DateTime;
+use App\State\UserPasswordHasher;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: '`user`')]
 #[ApiResource(
-    // normalizationContext: ['groups' => ['user:read', 'friends', 'book:read']],
     normalizationContext: ['groups' => ['user:read']],
-    // security: 'is_granted("ROLE_USER")',
-    // denormalizationContext: ['groups' => ['user:write', 'book:write']],
+    denormalizationContext: ['groups' => ['user:create', 'user:update']],
     operations: [
-            new Get(
-                controller: NotFoundAction::class,
-                openapiContext: [ 'summary' => 'hidden'],
-                read: false,
-                output: false 
-            ),
-            new GetCollection(
-                paginationEnabled: false,
-                uriTemplate: '/current-user',
-                controller: CurrentUserController::class,
-                read: false,
-                openapiContext: [
-                    'security' => [['JWT' => []]]
-                ]
-            ),
-            // new Post(),
-            // new Patch(),
-            // new Put(),
-            // new Delete(),
-            // new GetCollection(
-            //     name: 'api_user_friends',
-            //     uriTemplate: '/users/{id}/friends',
-            //     controller: GetUserFriends::class,
-            //     openapiContext: [
-            //         'summary' => 'Get all requester of a user',
-            //         'description' => '# Get all friends of a user',
-            //     ],
-            // ),
-            // new GetCollection(
-            //     name: 'api_user_friends_demands',
-            //     uriTemplate: '/users/{id}/friendship-demands/recieved',
-            //     openapiContext: [
-            //         'summary' => 'Get all friends of a user',
-            //         'description' => '# Get all friends of a user'
-            //     ],
-            // ),
-        ]
-    )]
+        new Get(
+            controller: NotFoundAction::class,
+            openapiContext: ['summary' => 'hidden'],
+            read: false,
+            output: false
+        ),
+        new GetCollection(
+            paginationEnabled: false,
+            uriTemplate: '/current-user',
+            controller: CurrentUserController::class,
+            read: false,
+            openapiContext: ['security' => [['JWT' => []]]],
+            security: 'is_granted("ROLE_USER")',
+        ),
+        new GetCollection(),
+        new Post(
+            processor: UserPasswordHasher::class,
+            validationContext: ['groups' => ['Default', 'user:create']]
+        ),
+        // new Patch(),
+        // new Put(),
+        // new Delete(),
+        // new GetCollection(
+        //     name: 'api_user_friends',
+        //     uriTemplate: '/users/{id}/friends',
+        //     controller: GetUserFriends::class,
+        //     openapiContext: [
+        //         'summary' => 'Get all requester of a user',
+        //         'description' => '# Get all friends of a user',
+        //     ],
+        // ),
+        // new GetCollection(
+        //     name: 'api_user_friends_demands',
+        //     uriTemplate: '/users/{id}/friendship-demands/recieved',
+        //     openapiContext: [
+        //         'summary' => 'Get all friends of a user',
+        //         'description' => '# Get all friends of a user'
+        //     ],
+        // ),
+    ]
+)]
 // #[ApiResource(
 //     uriTemplate: '/users/{id}/friends',
 //     uriVariables: [
@@ -77,40 +84,45 @@ use Symfony\Component\Serializer\Annotation\Groups;
 // api/friendships/{userId}/sent-requests
 // api/friendships/{userId}/recieved-requests
 #[ORM\Index(name: "idx_user_id", columns: ["id"])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[UniqueEntity('email')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
 {
     use Timer;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups(['user:read'])]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Groups(['user:read', 'user:create'])]
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    #[Groups(['user:read', 'user:write'])]
-    #[ORM\Column]
+    #[Groups(['user:read', 'user:create'])]
+    #[ORM\Column(type:"json")]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
-    #[Groups(['user:write'])]
     #[ORM\Column]
     private ?string $password = null;
 
-    #[Groups(['user:read', 'user:write', 'reviewsByNetwork:read', 'booksByNetwork:read'])]
+    #[Assert\NotBlank(groups: ['user:create'])]
+    #[Groups(['user:create', 'user:update'])]
+    private ?string $plainPassword = null;
+
+    #[Groups(['user:read', 'user:create', 'reviewsByNetwork:read', 'booksByNetwork:read'])]
     #[ORM\Column(length: 100)]
     private ?string $pseudo = null;
 
-    #[Groups(['user:read', 'user:write', 'booksByNetwork:read'])]
+    #[Groups(['user:read', 'user:create', 'booksByNetwork:read'])]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Media $media = null;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Book ::class)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Book::class)]
     private Collection $books;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, orphanRemoval: true)]
@@ -122,16 +134,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'friendAccepter', targetEntity: Friendship::class, orphanRemoval: true)]
     private Collection $friendAccepters;
 
+    
 
     public function __construct()
     {
         $this->friendRequesters = new ArrayCollection();
         $this->friendAccepters = new ArrayCollection();
     }
-    
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -190,13 +209,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+
     /**
      * @see UserInterface
      */
     public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 
 
@@ -344,6 +364,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public static function createFromPayload($id, array $payload)
+    {
+        return (new User())->setId($id)->setEmail($payload['username'] ?? '');
+    }
+
+	/**
+	 * @return mixed
+	 */
+	public function getPlainPassword() {
+		return $this->plainPassword;
+	}
+	
+	/**
+	 * @param mixed $plainPassword 
+	 * @return self
+	 */
+	public function setPlainPassword($plainPassword): self {
+		$this->plainPassword = $plainPassword;
+		return $this;
+	}
 }
 
 // Je veux récupérer tous les livres (et leurs reviews) qui ont été commentés par un de mes amis.

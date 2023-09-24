@@ -23,7 +23,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: FriendshipRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-    normalizationContext: ['groups' => ['friends']],
+    normalizationContext: ['groups' => ['friend:read', 'time:read']],
+    security: 'is_granted("ROLE_USER")',
     operations: [
         new GetCollection(),
         new GetCollection(
@@ -37,9 +38,21 @@ use Symfony\Component\Serializer\Annotation\Groups;
             uriTemplate: '/friend-requests',
             controller: FriendshipController::class,
             openapiContext: ['summary' => "Récupérer la Liste des Demandes d'Amis en Attente."],
-        )
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['friend:read', 'friendsByNetwork:read']],
+            name: 'get_friends_by_network',
+            uriTemplate: '/network/friends',
+            controller: NetworkController::class,
+            openapiContext: [
+                'summary' => "Récupère la liste des amis validés de l'utilisateur actuellement connecté",
+                'security' => [['JWT' => []]]
+            ],
+        ),
     ]
 )]
+
+
 
 #[ORM\Index(name: "idx_friend_requester_id", columns: ["friend_requester_id"])]
 #[ORM\Index(name: "idx_friend_accepter_id", columns: ["friend_accepter_id"])]
@@ -57,10 +70,10 @@ class Friendship
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['friend:read'])]
     private ?int $id = null;
 
-    #[Groups(['user:read', 'friends'])]
+    #[Groups(['friend:read'])]
     #[ORM\Column(type: 'string')]
     private string $status = self::STATUS_PENDING;
 

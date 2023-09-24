@@ -32,11 +32,11 @@ class OpenApiFactory implements OpenApiFactoryInterface
       'properties' => [
         'username' => [
           'type' => 'string',
-          'example' => 'admin@example.com',
+          'example' => 'user2@example.com',
         ],
         'password' => [
           'type' => 'string',
-          'example' => 'adminpassword',
+          'example' => 'password2',
         ],
       ],
     ]);

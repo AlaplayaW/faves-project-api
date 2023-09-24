@@ -20,6 +20,7 @@ use App\Controller\NetworkController;
 #[ApiResource(
 	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
+  security: 'is_granted("ROLE_USER")',
 
 	operations: [
 		new Get(),
@@ -28,7 +29,10 @@ use App\Controller\NetworkController;
 			name: 'get_books_by_network',
 			uriTemplate: '/network/books',
 			controller: NetworkController::class,
-			openapiContext: ['summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté"],
+			openapiContext: [
+				'summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté",
+				// 'security' => [['JWT' => []]]
+			],
 	),
 		// new Post(
 		// outputFormats: ['json']

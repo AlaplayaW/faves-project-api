@@ -18,6 +18,7 @@ class UserController extends AbstractController
     ) {}
 
 
+
     // #[Route('/api/users/{userId}/friends', methods: ['GET'], name: 'get_user_friends')]
 
     // public function getUserFriends(User $user): JsonResponse

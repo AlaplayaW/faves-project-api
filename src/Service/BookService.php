@@ -2,7 +2,7 @@
 namespace App\Service;
 
 use App\Repository\BookRepository;
-use App\Entity\Review;
+use App\Entity\Book;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -81,14 +81,14 @@ class BookService
     // }
 
     /**
-     * @return Collection|Review[]
+     * @return Collection|Book[]
      */
     public function getBooksByNetwork(int $userId): Collection | array
     {
         // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté
-      $booksReviews = $this->bookRepository->findBooksByNetwork($userId);
+      $books = $this->bookRepository->findBooksByNetwork($userId);
 
-        return $booksReviews;
+        return $books;
     }
 
 }

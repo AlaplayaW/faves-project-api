@@ -46,7 +46,7 @@ class FriendshipController extends AbstractController
         $user = $this->userService->getLoggedIndUser();
         $userId = $user->getId();
 
-        $friends = $this->friendshipService->getValidatedFriends($userId);
+        $friends = $this->friendshipService->getFriendsByNetwork($userId);
 
         return $this->json($friends);
     }
