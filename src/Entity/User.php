@@ -34,7 +34,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             controller: NotFoundAction::class,
             openapiContext: ['summary' => 'hidden'],
             read: false,
-            output: false
+            output: false,
+            // security: 'is_granted("ROLE_USER")',
         ),
         new GetCollection(
             paginationEnabled: false,
@@ -42,12 +43,13 @@ use Symfony\Component\Validator\Constraints as Assert;
             controller: CurrentUserController::class,
             read: false,
             openapiContext: ['security' => [['JWT' => []]]],
-            security: 'is_granted("ROLE_USER")',
+            // security: 'is_granted("ROLE_USER")',
         ),
         new GetCollection(),
         new Post(
             processor: UserPasswordHasher::class,
-            validationContext: ['groups' => ['Default', 'user:create']]
+            validationContext: ['groups' => ['Default', 'user:create']],
+            security: 'is_granted("PUBLIC_ACCESS")',
         ),
         // new Patch(),
         // new Put(),
@@ -116,6 +118,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
 
     #[Groups(['user:read', 'user:create', 'reviewsByNetwork:read', 'booksByNetwork:read'])]
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
     private ?string $pseudo = null;
 
     #[Groups(['user:read', 'user:create', 'booksByNetwork:read'])]

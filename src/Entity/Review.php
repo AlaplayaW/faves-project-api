@@ -19,6 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['review:read']],
     denormalizationContext: ['groups' => ['review:write']],
+    // security: 'is_granted("ROLE_USER")',
     operations: [
         new Get(),
         new Post(),

@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\Timer;
 use App\Repository\BookRepository;
 use DateTimeInterface;
@@ -20,7 +21,7 @@ use App\Controller\NetworkController;
 #[ApiResource(
 	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
-  security: 'is_granted("ROLE_USER")',
+	security: 'is_granted("ROLE_USER")',
 
 	operations: [
 		new Get(),
@@ -31,15 +32,10 @@ use App\Controller\NetworkController;
 			controller: NetworkController::class,
 			openapiContext: [
 				'summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté",
-				// 'security' => [['JWT' => []]]
 			],
-	),
-		// new Post(
-		// outputFormats: ['json']
-		// uriTemplate: '/books', 
-		// status: 301,
-		// controller: BookController::class
-		// )
+		),
+		new GetCollection(),
+		new Post()
 	]
 )]
 class Book
