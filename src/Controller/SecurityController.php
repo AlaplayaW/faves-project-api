@@ -16,7 +16,7 @@ class SecurityController extends AbstractController
       $this->userService = $userService;
   }
 
-    #[Route('/api/login', methods: ['POST'], name: 'api_login')]
+    #[Route('/fv1-api/login', methods: ['POST'], name: 'api_login')]
     public function login()
     {
         $user = $this->getUser();
@@ -27,12 +27,12 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route('/api/logout', methods: ['POST'], name: 'api_logout')]
+    #[Route('/fv1-api/logout', methods: ['POST'], name: 'api_logout')]
     public function logout()
     {}
 
 
-    // #[Route('/api/signup', methods: ['POST'], name: 'api_signup')]
+    // #[Route('/fv1-api/signup', methods: ['POST'], name: 'api_signup')]
     // public function signup()
     // {}
 

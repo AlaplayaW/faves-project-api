@@ -60,7 +60,7 @@ class NetworkController extends AbstractController
     }
 
     // Recupère les livres postés par les amis
-    #[Route('/api/network/books', name: 'get_books_by_network', methods: ['GET'])]
+    #[Route('/fv1-api/network/books', name: 'get_books_by_network', methods: ['GET'])]
     public function getBooksByNetwork(): JsonResponse
     {
         $this->getCurrentUser(); // Initialiser $this->user avec l'utilisateur actuel
@@ -80,7 +80,7 @@ class NetworkController extends AbstractController
     }
 
     // Recupère les avis des amis du user connecté
-    #[Route('/api/network/reviews', methods: ['GET'], name: 'get_reviews_by_network')]
+    #[Route('/fv1-api/network/reviews', methods: ['GET'], name: 'get_reviews_by_network')]
     public function getReviewsByNetwork(): JsonResponse
     {
         $this->getCurrentUser(); // Initialiser $this->user avec l'utilisateur actuel
@@ -97,7 +97,7 @@ class NetworkController extends AbstractController
     }
 
     // Recupère les amis du user connecté
-    #[Route('/api/network/friends', methods: ['GET'], name: 'get_friends_by_network')]
+    #[Route('/fv1-api/network/friends', methods: ['GET'], name: 'get_friends_by_network')]
     public function getFriendsByNetwork(): JsonResponse
     {
         $this->getCurrentUser(); // Initialiser $this->user avec l'utilisateur actuel
@@ -119,7 +119,7 @@ class NetworkController extends AbstractController
     }
 
     // // Recupère les avis des amis du user connecté
-    // #[Route('/api/network/friends/books-reviews', methods: ['GET'], name: 'get_friends_books_reviews')]
+    // #[Route('/fv1-api/network/friends/books-reviews', methods: ['GET'], name: 'get_friends_books_reviews')]
     // public function getFriendsReviewsByUser(): JsonResponse
     // {
     //     $user = $this->getLoggedInUser();
@@ -131,7 +131,7 @@ class NetworkController extends AbstractController
     // }
 
     // // Recupère les avis du user connecté
-    // #[Route('/api/network/user/books-reviews', methods: ['GET'], name: 'get_user_books_reviews')]
+    // #[Route('/fv1-api/network/user/books-reviews', methods: ['GET'], name: 'get_user_books_reviews')]
     // public function getReviews(): JsonResponse
     // {
     //     $user = $this->getLoggedInUser();
@@ -144,7 +144,7 @@ class NetworkController extends AbstractController
 
 
     // // Recupère les livres et films postés par le user connecté
-    // #[Route('/api/network/user/books', methods: ['GET'], name: 'get_user_books')]
+    // #[Route('/fv1-api/network/user/books', methods: ['GET'], name: 'get_user_books')]
     // public function getBooksPosted(): JsonResponse
     // {
     //     $user = $this->getLoggedInUser();

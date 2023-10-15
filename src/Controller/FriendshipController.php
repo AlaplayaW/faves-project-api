@@ -39,7 +39,7 @@ class FriendshipController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    #[Route('/api/friends', name: 'get_friends', methods: ['GET'])]
+    #[Route('/fv1-api/friends', name: 'get_friends', methods: ['GET'])]
     public function getFriends(): JsonResponse
     {
         // Récupérez l'ID de l'utilisateur actuellement connecté
@@ -51,7 +51,7 @@ class FriendshipController extends AbstractController
         return $this->json($friends);
     }
 
-    #[Route('/api/friend-requests', name: 'get_friend_requests', methods: ['GET'])]
+    #[Route('/fv1-api/friend-requests', name: 'get_friend_requests', methods: ['GET'])]
     public function getFriendRequests(): JsonResponse
     {
         // Récupérez l'ID de l'utilisateur actuellement connecté
@@ -71,7 +71,7 @@ class FriendshipController extends AbstractController
     //     $this->networkService = $networkService;
     // }
 
-    // #[Route('/api/network/reviews', name: 'api_network_reviews', methods: ['GET'])]
+    // #[Route('/fv1-api/network/reviews', name: 'api_network_reviews', methods: ['GET'])]
     // public function getNetworkReviews(Request $request): JsonResponse
     // {
     //     // Récupérer l'utilisateur connecté à l'application
@@ -89,7 +89,7 @@ class FriendshipController extends AbstractController
     //     return $this->json($reviews);
     // }
 
-    // #[Route('/api/network/books', name: 'get_books_by_network', methods: ['GET']) ]
+    // #[Route('/fv1-api/network/books', name: 'get_books_by_network', methods: ['GET']) ]
     // public function getBooksByNetwork(): JsonResponse
     // {
 

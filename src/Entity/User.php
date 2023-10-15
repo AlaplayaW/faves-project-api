@@ -81,8 +81,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 //     ], 
 //     operations: [new GetCollection()]
 // )]
-// api/friendships/{userId}/sent-requests
-// api/friendships/{userId}/recieved-requests
+// fv1-api/friendships/{userId}/sent-requests
+// fv1-api/friendships/{userId}/recieved-requests
 #[ORM\Index(name: "idx_user_id", columns: ["id"])]
 #[UniqueEntity('email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface

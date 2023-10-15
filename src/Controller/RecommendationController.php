@@ -18,7 +18,7 @@ class RecommendationController extends AbstractController
     ) {}
 
 
-    // #[Route('/api/users/{userId}/friends', methods: ['GET'], name: 'get_user_friends')]
+    // #[Route('/fv1-api/users/{userId}/friends', methods: ['GET'], name: 'get_user_friends')]
 
     // public function getUserFriends(User $user): JsonResponse
     // {

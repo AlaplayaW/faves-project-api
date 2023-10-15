@@ -79,7 +79,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
         security: [],
       ),
     );
-    $openApi->getPaths()->addPath('/api/login', $pathItem);
+    $openApi->getPaths()->addPath('/fv1-api/login', $pathItem);
 
     return $openApi;
   }

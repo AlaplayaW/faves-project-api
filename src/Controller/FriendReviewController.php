@@ -16,7 +16,7 @@ class FriendReviewController extends AbstractController
     }
 
 
-    #[Route('/api/friend-reviews/{userId}', name: 'friend_reviews', methods: ['GET'])]
+    #[Route('/fv1-api/friend-reviews/{userId}', name: 'friend_reviews', methods: ['GET'])]
     public function getFriendReviews(int $userId): JsonResponse
     {
         $friendReviews = $this->friendReviewService->getBooksAndReviewsByFriends($userId);
