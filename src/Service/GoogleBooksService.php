@@ -22,7 +22,7 @@ class GoogleBooksService
 
         $response = $httpClient->request('GET', $this->apiPath, [
             'query' => [
-                'title' => $query,
+                'q' => "intitle:{$query}", // Recherche par titre
                 'key' => $this->apiKey,
             ],
         ]);

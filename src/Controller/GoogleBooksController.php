@@ -18,20 +18,11 @@ class GoogleBooksController extends AbstractController
     $this->googleBooksService = $googleBooksService;
   }
 
-  // public function __invoke(Request $request): JsonResponse
-  // {
-  //   $query = $request->query->get('query');
-  //   $books = $this->googleBooksService->searchBooks($query);
-
-  //   return new JsonResponse($books);
-  // }
-
   public function __invoke(Request $request): JsonResponse
   {
-      $query = $request->query->get('q');
-      $books = $this->googleBooksService->searchBooks($query);
-  
-      return new JsonResponse($books);
-  }
+    $query = $request->query->get('title');
+    $books = $this->googleBooksService->searchBooks($query);
 
+    return new JsonResponse($books);
+  }
 }
