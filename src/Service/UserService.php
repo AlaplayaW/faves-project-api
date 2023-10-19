@@ -1,11 +1,9 @@
 <?php
+
 namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Exception\UserNotFoundException;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class UserService
@@ -14,7 +12,7 @@ class UserService
 
     private Security $security;
 
-    public function __construct(UserRepository $userRepository, Security $security )
+    public function __construct(UserRepository $userRepository, Security $security)
     {
         $this->userRepository = $userRepository;
         $this->security = $security;
@@ -29,6 +27,4 @@ class UserService
 
         return $user;
     }
-
-
 }

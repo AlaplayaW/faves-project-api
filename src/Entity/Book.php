@@ -3,18 +3,20 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\Timer;
 use App\Repository\BookRepository;
+use App\Controller\GoogleBooksController;
 use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Controller\NetworkController;
-
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -27,6 +29,7 @@ use App\Controller\NetworkController;
 		new Get(),
 		new GetCollection(
 			normalizationContext: ['groups' => ['book:read', 'booksByNetwork:read']],
+			denormalizationContext: ['groups' => ['book:write']],
 			name: 'get_books_by_network',
 			uriTemplate: '/network/books',
 			controller: NetworkController::class,
@@ -34,10 +37,15 @@ use App\Controller\NetworkController;
 				'summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté",
 			],
 		),
-		new GetCollection(),
-		new Post()
+		new GetCollection(
+			uriTemplate: '/google-books/search',
+			controller: GoogleBooksController::class,
+			openapiContext: ['security' => [['JWT' => []]]],
+		),
+		new Post(),
 	]
 )]
+
 class Book
 {
 	use Timer;
@@ -45,10 +53,12 @@ class Book
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
 	#[ORM\Column]
+	#[Groups(['book:read'])]
 	private ?int $id = null;
 
 	#[Groups(['book:read', 'book:write', 'reviewsByNetwork:read'])]
 	#[ORM\Column(length: 255, nullable: true)]
+	#[ApiFilter(SearchFilter::class, strategy: 'partial')]
 	private ?string $title = null;
 
 	#[Groups(['book:read', 'book:write'])]
@@ -88,7 +98,7 @@ class Book
 	#[Groups(['book:read', 'book:write'])]
 	private ?Media $media = null;
 
-	#[Groups(['book:read'])]
+	#[Groups(['book:read', 'review:write'])]
 	#[ORM\OneToMany(mappedBy: 'book', targetEntity: Review::class, orphanRemoval: true)]
 	private Collection $reviews;
 

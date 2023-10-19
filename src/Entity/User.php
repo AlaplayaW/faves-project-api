@@ -35,7 +35,6 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapiContext: ['summary' => 'hidden'],
             read: false,
             output: false,
-            // security: 'is_granted("ROLE_USER")',
         ),
         new GetCollection(
             paginationEnabled: false,
@@ -43,7 +42,6 @@ use Symfony\Component\Validator\Constraints as Assert;
             controller: CurrentUserController::class,
             read: false,
             openapiContext: ['security' => [['JWT' => []]]],
-            // security: 'is_granted("ROLE_USER")',
         ),
         new GetCollection(),
         new Post(
@@ -51,40 +49,9 @@ use Symfony\Component\Validator\Constraints as Assert;
             validationContext: ['groups' => ['Default', 'user:create']],
             security: 'is_granted("PUBLIC_ACCESS")',
         ),
-        // new Patch(),
-        // new Put(),
-        // new Delete(),
-        // new GetCollection(
-        //     name: 'api_user_friends',
-        //     uriTemplate: '/users/{id}/friends',
-        //     controller: GetUserFriends::class,
-        //     openapiContext: [
-        //         'summary' => 'Get all requester of a user',
-        //         'description' => '# Get all friends of a user',
-        //     ],
-        // ),
-        // new GetCollection(
-        //     name: 'api_user_friends_demands',
-        //     uriTemplate: '/users/{id}/friendship-demands/recieved',
-        //     openapiContext: [
-        //         'summary' => 'Get all friends of a user',
-        //         'description' => '# Get all friends of a user'
-        //     ],
-        // ),
     ]
 )]
-// #[ApiResource(
-//     uriTemplate: '/users/{id}/friends',
-//     uriVariables: [
-//         'userId' => new Link(
-//             fromClass: User::class,
-//             fromProperty: 'id'
-//         )
-//     ], 
-//     operations: [new GetCollection()]
-// )]
-// fv1-api/friendships/{userId}/sent-requests
-// fv1-api/friendships/{userId}/recieved-requests
+
 #[ORM\Index(name: "idx_user_id", columns: ["id"])]
 #[UniqueEntity('email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
@@ -94,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'book:read'])]
     private ?int $id = null;
 
     #[Assert\NotBlank]
@@ -388,8 +355,3 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
 		return $this;
 	}
 }
-
-// Je veux récupérer tous les livres (et leurs reviews) qui ont été commentés par un de mes amis.
-// Le but est d'afficher une liste de livres avec pour chaque livre, tous les commentaires affiches par mes amis.
-// Si le meme livre est commenté par plusieurs amis, je veux que le livre n'apparaisse qu'une seule fois, et que tous les commentaires soient visibles quand on clique sur le livre.
-// La liste des livres doit faire apparaitre en 1er le livre qui a été commenté le plus récemment par un ami.

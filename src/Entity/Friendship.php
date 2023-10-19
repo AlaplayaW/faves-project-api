@@ -24,7 +24,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => ['friend:read', 'time:read']],
-    security: 'is_granted("ROLE_USER")',
+    // security: 'is_granted("ROLE_USER")',
     operations: [
         new GetCollection(),
         new GetCollection(
@@ -46,7 +46,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             controller: NetworkController::class,
             openapiContext: [
                 'summary' => "Récupère la liste des amis validés de l'utilisateur actuellement connecté",
-                'security' => [['JWT' => []]]
+                // 'security' => [['JWT' => []]]
             ],
         ),
     ]

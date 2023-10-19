@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Service\FriendReviewService;
@@ -23,5 +24,4 @@ class FriendReviewController extends AbstractController
 
         return $this->json($friendReviews);
     }
-
 }

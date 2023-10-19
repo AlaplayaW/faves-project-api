@@ -17,13 +17,9 @@ class CurrentUserController extends AbstractController
 
   public function __invoke()
   {
-    // $user = $this->getUser();
-    // $username = $user->getUserIdentifier();
     $userFromToken = $this->security->getUser();
-    
-    //Récupérer les informations du user à partir de son username
+
     $user = $this->userRepository->findOneBy(['email' => $userFromToken->getUserIdentifier()]);
     return $user;
   }
-
 }

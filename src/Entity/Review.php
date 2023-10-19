@@ -7,7 +7,6 @@ use App\Entity\Traits\Timer;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Controller\NetworkController;
 use App\Repository\ReviewRepository;
 use Doctrine\DBAL\Types\Types;
@@ -19,7 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['review:read']],
     denormalizationContext: ['groups' => ['review:write']],
-    // security: 'is_granted("ROLE_USER")',
+	security: 'is_granted("ROLE_USER")',
+
     operations: [
         new Get(),
         new Post(),
@@ -31,26 +31,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			controller: NetworkController::class,
 			openapiContext: ['summary' => "Récupère la liste des critiques des amis de l'utilisateur actuellement connecté"],
 	),
-        // new GetCollection(
-        //     name: 'api_users_reviews',
-        //     uriTemplate: '/reviews/users/',
-        //     // controller: GetReviewsByUsers::class,
-        //     openapiContext: [
-        //         'summary' => 'Get all reviews of a user list',
-        //         'description' => '# Get all reviews of a  list',
-        //     ],
-        // ),
-        // new GetCollection(
-        //     name: 'api_user_friends_demands',
-        //     uriTemplate: '/users/{id}/friendship-demands/recieved',
-        //     openapiContext: [
-        //         'summary' => 'Get all friends of a user',
-        //         'description' => '# Get all friends of a user'
-        //     ],
-        // ),
     ]
     )]
-// #[ApiFilter(SearchFilter::class, properties: ['user.id'])]
 class Review
 {
     use Timer;
@@ -61,20 +43,20 @@ class Review
     #[Groups(['review:read'])]
     private ?int $id = null;
 
-    #[Groups(['review:read', 'booksByNetwork:read'])]
+    #[Groups(['review:read', 'booksByNetwork:read', 'review:write'])]
     #[ORM\Column]
     private ?int $rating = null;
 
-    #[Groups(['review:read', 'booksByNetwork:read'])]
+    #[Groups(['review:read', 'review:write', 'booksByNetwork:read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    #[Groups(['reviewsByNetwork:read'])]
+    #[Groups(['reviewsByNetwork:read', 'review:write'])]
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Book $book = null;
 
-    #[Groups(['reviewsByNetwork:read', 'booksByNetwork:read'])]
+    #[Groups(['reviewsByNetwork:read', 'booksByNetwork:read', 'review:write'])]
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
