@@ -98,4 +98,19 @@ class NetworkController extends AbstractController
         $jsonFriendList = $this->serializer->serialize($friends, 'json', ['groups' => ['friend:read', 'friendsByNetwork:read', 'time:read']]);
         return new JsonResponse($jsonFriendList, Response::HTTP_OK, [], true);
     }
+
+        // Recupère les amis du user connecté
+        #[Route('/fv1-api/network/all-friends', methods: ['GET'], name: 'get_all_friends_by_network')]
+        public function getAllFriendsByNetwork(): JsonResponse
+        {
+            $this->getCurrentUser();
+            if ($this->user === null) {
+                return new JsonResponse(['message' => 'Utilisateur non authentifié'], Response::HTTP_UNAUTHORIZED);
+            }
+    
+            $friends = $this->friendService->getAllFriendsByNetwork($this->user->getId());
+            // converti $friendsReviews en format JSON avec les groupes de sérialisation associés à 'friend:read'.
+            $jsonFriendList = $this->serializer->serialize($friends, 'json', ['groups' => ['friend:read', 'friendsByNetwork:read', 'time:read']]);
+            return new JsonResponse($jsonFriendList, Response::HTTP_OK, [], true);
+        }
 }

@@ -65,6 +65,21 @@ class FriendshipRepository extends ServiceEntityRepository
     return $qb->getQuery()->getResult();
 }
 
+public function findAcceptedOrPendingFriendships(int $userId): array
+{
+    $qb = $this->createQueryBuilder('f')
+        ->andWhere('f.friendRequester = :user OR f.friendAccepter = :user')
+        ->andWhere('f.status = :accepted OR f.status = :pending')
+        ->setParameters([
+            'user' => $userId,
+            'accepted' => Friendship::STATUS_ACCEPTED,
+            'pending' => Friendship::STATUS_PENDING,
+        ]);
+
+    return $qb->getQuery()->getResult();
+}
+
+
 // public function findReviewsByUserFriends(int $userId): array
 // {
 //     // Code pour récupérer la liste des critiques de livres commentées par des amis de l'utilisateur connecté

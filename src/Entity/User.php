@@ -61,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'book:read'])]
+    #[Groups(['user:read', 'book:read', 'friend:read'])]
     private ?int $id = null;
 
     #[Assert\NotBlank]
@@ -83,7 +83,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     #[Groups(['user:create', 'user:update'])]
     private ?string $plainPassword = null;
 
-    #[Groups(['user:read', 'user:create', 'reviewsByNetwork:read', 'booksByNetwork:read'])]
+    #[Groups(['user:read', 'user:create', 'reviewsByNetwork:read', 'booksByNetwork:read', 'friend:read'])]
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
     private ?string $pseudo = null;

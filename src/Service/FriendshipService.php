@@ -33,4 +33,11 @@ class FriendshipService
 
     return $friendRequests;
   }
+
+  public function getAllFriendsByNetwork(int $userId): array
+  {
+    $friendRequests = $this->friendshipRepository->findAcceptedOrPendingFriendships($userId);
+
+    return $friendRequests;
+  }
 }

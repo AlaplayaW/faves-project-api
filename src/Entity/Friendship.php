@@ -8,36 +8,27 @@ use App\Entity\User;
 use App\Repository\FriendshipRepository;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use App\Controller\FriendshipController;
-use App\Controller\GetUserFriends;
 use App\Controller\NetworkController;
-use App\Filters\FriendsFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: FriendshipRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => ['friend:read', 'time:read']],
-    // security: 'is_granted("ROLE_USER")',
     operations: [
-        new GetCollection(),
         new GetCollection(
-            name: 'get_friends',
-            uriTemplate: '/friends',
-            controller: FriendshipController::class,
-            openapiContext: ['summary' => "Récupère la liste d'amis validés de l'utilisateur connecté."],
+            openapiContext: [
+                'security' => [['JWT' => []]]
+            ],
         ),
         new GetCollection(
-            name: 'get_friend_requests',
-            uriTemplate: '/friend-requests',
-            controller: FriendshipController::class,
-            openapiContext: ['summary' => "Récupérer la Liste des Demandes d'Amis en Attente."],
+            name: 'get_all_friends_by_network',
+            uriTemplate: '/network/all-friends',
+            controller: NetworkController::class,
+            openapiContext: [
+                'summary' => "Récupère la liste d'amis en attente ou acceptées de l'utilisateur connecté.",
+                'security' => [['JWT' => []]]
+            ],
         ),
         new GetCollection(
             normalizationContext: ['groups' => ['friend:read', 'friendsByNetwork:read']],
@@ -46,7 +37,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             controller: NetworkController::class,
             openapiContext: [
                 'summary' => "Récupère la liste des amis validés de l'utilisateur actuellement connecté",
-                // 'security' => [['JWT' => []]]
+                'security' => [['JWT' => []]]
             ],
         ),
     ]
@@ -77,6 +68,7 @@ class Friendship
     #[ORM\Column(type: 'string')]
     private string $status = self::STATUS_PENDING;
 
+    #[Groups(['friend:read'])]
     #[ORM\Column(type: 'datetime', nullable: true)]
     private $requestDate = null;
 
@@ -86,10 +78,12 @@ class Friendship
     #[ORM\Column(type: 'datetime', nullable: true)]
     private $rejectionDate = null;
 
+    #[Groups(['friend:read'])]
     #[ORM\ManyToOne(inversedBy: 'friendRequesters')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $friendRequester = null;
 
+    #[Groups(['friend:read'])]
     #[ORM\ManyToOne(inversedBy: 'friendAccepters')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $friendAccepter = null;
