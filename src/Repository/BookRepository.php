@@ -41,98 +41,61 @@ class BookRepository extends ServiceEntityRepository
 
     public function findBooksByNetwork(int $userId): array
     {
-        // Code pour récupérer la liste des livres postés par les amis de l'utilisateur connecté
 
-        $qb = $this->createQueryBuilder('b')
-            ->join('b.reviews', 'r')
-            ->join('r.user', 'u')
-            ->join('u.friendAccepters', 'f')
-            ->where('f.status = :status')
-            ->andWhere('(f.friendRequester = :user AND f.friendAccepter = u) OR (f.friendAccepter = :user AND f.friendRequester = u)')
-            ->orderBy('r.createdAt', 'DESC')
-            ->setParameter('status', 'accepted')
-            ->setParameter('user', $userId);
+        $entityManager = $this->getEntityManager();
 
-        return $qb->getQuery()->getResult();
+        $queryBuilder = $entityManager->createQuery("
+            SELECT DISTINCT b
+            FROM App\Entity\Book b
+            JOIN App\Entity\User u WITH b.user = u
+            LEFT JOIN App\Entity\Friendship f WITH (u = f.friendRequester OR u = f.friendAccepter) AND f.status LIKE 'accepted'
+            WHERE u.id = :userId OR f.friendRequester = :userId OR f.friendAccepter = :userId
+            ORDER BY b.createdAt DESC
+        ")
+            ->setParameter('userId', $userId);
+
+        return $queryBuilder->getResult();
     }
-    
-    // public function findReviewsByUserFriends(int $userId)
-    // {
-    //     $connection = $this->getEntityManager()->getConnection();
 
-    //     $sql = '
-    //     SELECT b.title, r.comment
-    //     FROM book b
-    //     INNER JOIN review r ON b.id = r.book_id
-    //     INNER JOIN "user" u ON r.user_id = u.id
-    //     INNER JOIN friendship f ON (
-    //         (f.status = :status AND f.friend_requester_id = :user AND f.friend_accepter_id = u.id)
-    //         OR
-    //         (f.status = :status AND f.friend_requester_id = u.id AND f.friend_accepter_id = :user)
-    //     )
-    //     ORDER BY r.created_at DESC;
-    // ';
-
-    //     $statement = $connection->prepare($sql);
-    //     $statement->bindValue('user', $userId, \PDO::PARAM_INT); // \PDO::PARAM_INT pour valeurs entières
-    //     $statement->bindValue('status', 'accepted');
-    //     $res = $statement->executeQuery();
-    //     return $res->fetchAllAssociative();
-    // }
-
-    // /**
-    //  * @return Genre[] Returns an array of Genre objects for an Book ID
-    //  */
-    // public function findGenresByBook($bookId)
-    // {
-    //     return $this->createQueryBuilder('g')
-    //         ->select('g')
-    //         ->leftJoin('g.bookGenres', 'bookg')
-    //         ->leftJoin('bookg.book', 'book')
-    //         ->where('book.id = :bookId')
-    //         ->setParameter('bookId', $bookId)
-    //         ->getQuery()
-    //         ->getResult();
-    // }
+    public function findBooksAndReviewsByFriends(int $userId)
+    {
+        return $this->createQueryBuilder('review')
+            ->select('book.id AS bookId', 'book.title', 'review.rating', 'review.comment', 'review.createdAt')
+            ->join('review.book', 'book')
+            ->join('review.user', 'user')
+            ->join('user.friendRequesters', 'requester', 'WITH', 'requester.friendshipAccepter = :user AND requester.status = true')
+            ->join('user.friendAccepters', 'accepter', 'WITH', 'accepter.friendshipRequester = :user AND accepter.status = true')
+            ->where('requester.id IS NOT NULL OR accepter.id IS NOT NULL')
+            ->setParameter('userId', $userId)
+            ->orderBy('review.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
 
-    // public function findByFriendIds(array $friendIds)
-    // {
-    //     return $this->createQueryBuilder('book')
-    //         ->select('book')
-    //         ->join('book.user', 'user')
-    //         ->where('user.id IN (:friendIds)')
-    //         ->setParameter('friendIds', $friendIds)
-    //         ->getQuery()
-    //         ->getResult();
-    // }
+    public function findReviewsByUserFriends(int $userId)
+    {
+        $connection = $this->getEntityManager()->getConnection();
 
-    // public function findByCurrentUserFriends(int $userId)
-    // {
-    //     return $this->createQueryBuilder('book')
-    //         ->select('book')
-    //         ->join('book.user', 'user')
-    //         ->join('user.friends', 'friend')
-    //         ->where('friend.id = :userId')
-    //         ->setParameter('userId', $userId)
-    //         ->getQuery()
-    //         ->getResult();
-    // }
+        $sql = '
+        SELECT b.title, r.comment
+        FROM book b
+        INNER JOIN review r ON b.id = r.book_id
+        INNER JOIN "user" u ON r.user_id = u.id
+        INNER JOIN friendship f ON (
+            (f.status = :status AND f.friend_requester_id = :user AND f.friend_accepter_id = u.id)
+            OR
+            (f.status = :status AND f.friend_requester_id = u.id AND f.friend_accepter_id = :user)
+        )
+        ORDER BY r.created_at DESC;
+    ';
 
-    // public function findBooksAndReviewsByFriends(int $userId)
-    // {
-    //     return $this->createQueryBuilder('review')
-    //         ->select('book.id AS bookId', 'book.title', 'review.rating', 'review.comment', 'review.createdAt')
-    //         ->join('review.book', 'book')
-    //         ->join('review.user', 'user')
-    //         ->join('user.friendshipRequests', 'requester', 'WITH', 'requester.friendshipAccepter = :user AND requester.isAccepted = true')
-    //         ->join('user.friendshipAccepters', 'accepter', 'WITH', 'accepter.friendshipRequester = :user AND accepter.isAccepted = true')
-    //         ->where('requester.id IS NOT NULL OR accepter.id IS NOT NULL')
-    //         ->setParameter('userId', $userId)
-    //         ->orderBy('review.createdAt', 'DESC')
-    //         ->getQuery()
-    //         ->getResult();
-    // }
+        $statement = $connection->prepare($sql);
+        $statement->bindValue('user', $userId, \PDO::PARAM_INT); // \PDO::PARAM_INT pour valeurs entières
+        $statement->bindValue('status', 'accepted');
+        $res = $statement->executeQuery();
+        return $res->fetchAllAssociative();
+    }
 
 
     //    /**

@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Controller\CurrentUserController;
 use App\Entity\Traits\Timer;
 use App\Entity\Review;
@@ -28,8 +29,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`user`')]
 #[ApiResource(
     normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:create', 'user:update']],
+    denormalizationContext: ['groups' => ['user:create']],
     operations: [
+        new Get(
+            openapiContext: ['security' => [['JWT' => []]]]
+        ),
+        new Put(
+            processor: UserPasswordHasher::class,
+            validationContext: ['groups' => ['user:update']],
+            denormalizationContext: ['groups' => ['user:update']],
+            openapiContext: ['security' => [['JWT' => []]]]
+        ),
         new Get(
             controller: NotFoundAction::class,
             openapiContext: ['summary' => 'hidden'],
@@ -83,9 +93,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     #[Groups(['user:create', 'user:update'])]
     private ?string $plainPassword = null;
 
-    #[Groups(['user:read', 'user:create', 'reviewsByNetwork:read', 'booksByNetwork:read', 'friend:read'])]
+    #[Groups(['user:read', 'user:create', 'reviewsByNetwork:read', 'booksByNetwork:read', 'friend:read', 'user:update'])]
     #[ORM\Column(length: 100)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(groups: ['user:create'])]
     private ?string $pseudo = null;
 
     #[Groups(['user:read', 'user:create', 'booksByNetwork:read'])]

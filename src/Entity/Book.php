@@ -17,24 +17,25 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Controller\NetworkController;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
 	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
-	security: 'is_granted("ROLE_USER")',
+	// security: 'is_granted("PUBLIC_ACCESS")',
 
 	operations: [
 		new Get(),
 		new GetCollection(
 			normalizationContext: ['groups' => ['book:read', 'booksByNetwork:read']],
-			denormalizationContext: ['groups' => ['book:write']],
 			name: 'get_books_by_network',
 			uriTemplate: '/network/books',
 			controller: NetworkController::class,
 			openapiContext: [
 				'summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté",
+				'security' => [['JWT' => []]]
 			],
 		),
 		new GetCollection(
@@ -377,17 +378,21 @@ class Book
 	 */
 	public function calculateAverageRating(): ?float
 	{
-		$totalRating = 0;
-		$reviewCount = count($this->reviews);
-
-		if ($reviewCount === 0) {
-			return null;
-		}
-
-		foreach ($this->reviews as $review) {
-			$totalRating += $review->getRating();
-		}
-
-		return $totalRating / $reviewCount;
+			$totalRating = 0;
+			$reviewCount = 0;
+	
+			foreach ($this->reviews as $review) {
+					$rating = $review->getRating();
+					if ($rating !== null) {
+							$totalRating += $rating;
+							$reviewCount++;
+					}
+			}
+	
+			if ($reviewCount === 0) {
+					return null;
+			}
+	
+			return $totalRating / $reviewCount;
 	}
 }

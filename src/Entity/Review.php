@@ -9,9 +9,11 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Controller\NetworkController;
 use App\Repository\ReviewRepository;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -44,7 +46,8 @@ class Review
     private ?int $id = null;
 
     #[Groups(['review:read', 'booksByNetwork:read', 'review:write'])]
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
+    #[Assert\Type(type:Types::INTEGER , message:"The value of 'rating' must be an integer.")]
     private ?int $rating = null;
 
     #[Groups(['review:read', 'review:write', 'booksByNetwork:read'])]

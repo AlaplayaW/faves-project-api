@@ -21,7 +21,7 @@ class UserService
     public function getLoggedIndUser(): User
     {
         $userFromToken = $this->security->getUser();
-        dd($userFromToken);
+        // dd($userFromToken);
         //Récupérer les informations du user à partir de son username
         $user = $this->userRepository->findOneBy(['email' => $userFromToken->getUserIdentifier()]);
 

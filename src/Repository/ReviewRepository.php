@@ -39,6 +39,20 @@ class ReviewRepository extends ServiceEntityRepository
         }
     }
 
+    public function findReviewsByNetwork(int $userId): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->join('r.user', 'u')
+            ->join('u.friendAccepters', 'f')
+            ->where('f.status = :status')
+            ->andWhere('(f.friendRequester = :user AND f.friendAccepter = u) OR (f.friendAccepter = :user AND f.friendRequester = u)OR (u = :user)')
+            ->orderBy('r.createdAt', 'DESC')
+            ->setParameter('status', 'accepted')
+            ->setParameter('user', $userId);
+
+        return $qb->getQuery()->getResult();
+    }
+
     //     public function findBooksAndReviewsByFriends(int $userId)
     //     {
     //         return $this->createQueryBuilder('review')
@@ -53,31 +67,6 @@ class ReviewRepository extends ServiceEntityRepository
     //             ->getQuery()
     //             ->getResult();
     //     }
-
-    public function findReviewsByNetwork(int $userId): array
-    {
-        $qb = $this->createQueryBuilder('r')
-            ->join('r.user', 'u')
-            ->join('u.friendAccepters', 'f')
-            ->where('f.status = :status')
-            ->andWhere('(f.friendRequester = :user AND f.friendAccepter = u) OR (f.friendAccepter = :user AND f.friendRequester = u)')
-            ->orderBy('r.createdAt', 'DESC')
-            ->setParameter('status', 'accepted')
-            ->setParameter('user', $userId);
-
-        return $qb->getQuery()->getResult();
-        //   return $this->createQueryBuilder('review')
-        //       ->select('book.id AS bookId', 'book.title', 'review.rating', 'review.comment', 'review.createdAt')
-        //       ->join('review.book', 'book')
-        //       ->join('review.user', 'user')
-        //       ->join('user.friendshipRequests', 'requester', 'WITH', 'requester.friendshipAccepter = :userId AND requester.isAccepted = true')
-        //       ->join('user.friendshipAccepters', 'accepter', 'WITH', 'accepter.friendshipRequester = :userId AND accepter.isAccepted = true')
-        //       ->andWhere('requester.id IS NOT NULL OR accepter.id IS NOT NULL')
-        //       ->setParameter('userId', $userId)
-        //       ->orderBy('review.createdAt', 'DESC')
-        //       ->getQuery()
-        //       ->getResult();
-    }
 
     //    /**
     //     * @return Review[] Returns an array of Review objects
