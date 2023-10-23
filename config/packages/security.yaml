@@ -6,48 +6,47 @@ security:
     # https://symfony.com/doc/current/security/authenticator_manager.html
     enable_authenticator_manager: true
 
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
-    providers:
-        # used to reload user from session & other features (e.g. switch_user)
-        app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
-        jwt:
-            lexik_jwt: 
-                class: App\Entity\User
-
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
         ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    # providers:
+    providers:
+        users:
+            entity:
+                class: App\Entity\User
+                property: email
 
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        
-        login:
-            pattern: ^/fv1-api/login$
+
+        main:
+            pattern: ^/fv1-api/login
             stateless: true
-            provider: app_user_provider
+            provider: users
             json_login:
                 check_path: /fv1-api/login
+                username_path: email
+                password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
-            pattern:   ^/fv1-api/
+            pattern: ^/fv1-api
             stateless: true
-            provider: jwt
             jwt: ~
-
+            
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/$, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI
+        - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/fv1-api/login, roles: PUBLIC_ACCESS }
         - { path: ^/fv1-api/users, method: POST, roles: PUBLIC_ACCESS }
-        - { path: ^/fv1-api/, roles: ROLE_USER } # Allows accessing the Swagger UI
+        - { path: ^/fv1-api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/fv1-api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

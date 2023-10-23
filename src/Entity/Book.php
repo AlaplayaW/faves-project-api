@@ -25,6 +25,7 @@ use App\Controller\NetworkController;
 #[ApiResource(
 	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
+
 	operations: [
 		new GetCollection(
 			normalizationContext: ['groups' => ['book:read', 'booksByNetwork:read']],
@@ -33,13 +34,11 @@ use App\Controller\NetworkController;
 			controller: NetworkController::class,
 			openapiContext: [
 				'summary' => "Récupère la liste des livres commentés par les amis de l'utilisateur actuellement connecté",
-				'security' => [['JWT' => []]]
 			],
 		),
 		new GetCollection(
 			uriTemplate: '/google-books/search',
 			controller: GoogleBooksController::class,
-			openapiContext: ['security' => [['JWT' => []]]],
 		),
 		new Get(),
 		new Post(),

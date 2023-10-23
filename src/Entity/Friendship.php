@@ -17,9 +17,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
     normalizationContext: ['groups' => ['friend:read', 'time:read']],
     operations: [
         new GetCollection(
-            openapiContext: [
-                'security' => [['JWT' => []]]
-            ],
         ),
         new GetCollection(
             name: 'get_all_friends_by_network',
@@ -27,7 +24,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
             controller: NetworkController::class,
             openapiContext: [
                 'summary' => "Récupère la liste d'amis en attente ou acceptées de l'utilisateur connecté.",
-                'security' => [['JWT' => []]]
             ],
         ),
         new GetCollection(
@@ -37,7 +33,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
             controller: NetworkController::class,
             openapiContext: [
                 'summary' => "Récupère la liste des amis validés de l'utilisateur actuellement connecté",
-                'security' => [['JWT' => []]]
             ],
         ),
     ]

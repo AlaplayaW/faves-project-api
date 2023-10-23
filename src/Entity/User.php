@@ -16,7 +16,6 @@ use App\State\UserPasswordHasher;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -31,14 +30,11 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create']],
     operations: [
-        new Get(
-            openapiContext: ['security' => [['JWT' => []]]]
-        ),
+        new Get(),
         new Put(
             processor: UserPasswordHasher::class,
             validationContext: ['groups' => ['user:update']],
             denormalizationContext: ['groups' => ['user:update']],
-            openapiContext: ['security' => [['JWT' => []]]]
         ),
         new Get(
             controller: NotFoundAction::class,
@@ -51,7 +47,6 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/current-user',
             controller: CurrentUserController::class,
             read: false,
-            openapiContext: ['security' => [['JWT' => []]]],
         ),
         new GetCollection(),
         new Post(
@@ -64,7 +59,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Index(name: "idx_user_id", columns: ["id"])]
 #[UniqueEntity('email')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use Timer;
 
@@ -80,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     private ?string $email = null;
 
     #[Groups(['user:read', 'user:create'])]
-    #[ORM\Column(type:"json")]
+    #[ORM\Column(type: "json")]
     private array $roles = [];
 
     /**
@@ -114,7 +109,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
     #[ORM\OneToMany(mappedBy: 'friendAccepter', targetEntity: Friendship::class, orphanRemoval: true)]
     private Collection $friendAccepters;
 
-    
+
 
     public function __construct()
     {
@@ -349,19 +344,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JWTUser
         return (new User())->setId($id)->setEmail($payload['username'] ?? '');
     }
 
-	/**
-	 * @return mixed
-	 */
-	public function getPlainPassword() {
-		return $this->plainPassword;
-	}
-	
-	/**
-	 * @param mixed $plainPassword 
-	 * @return self
-	 */
-	public function setPlainPassword($plainPassword): self {
-		$this->plainPassword = $plainPassword;
-		return $this;
-	}
+    /**
+     * @return mixed
+     */
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param mixed $plainPassword 
+     * @return self
+     */
+    public function setPlainPassword($plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
 }
