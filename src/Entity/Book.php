@@ -5,9 +5,11 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Entity\Traits\Timer;
 use App\Repository\BookRepository;
 use App\Controller\GoogleBooksController;
@@ -17,17 +19,13 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Controller\NetworkController;
-use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
 	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
-	// security: 'is_granted("PUBLIC_ACCESS")',
-
 	operations: [
-		new Get(),
 		new GetCollection(
 			normalizationContext: ['groups' => ['book:read', 'booksByNetwork:read']],
 			name: 'get_books_by_network',
@@ -43,7 +41,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 			controller: GoogleBooksController::class,
 			openapiContext: ['security' => [['JWT' => []]]],
 		),
+		new Get(),
 		new Post(),
+		new Put(),
+		new Delete()
 	]
 )]
 
@@ -378,21 +379,21 @@ class Book
 	 */
 	public function calculateAverageRating(): ?float
 	{
-			$totalRating = 0;
-			$reviewCount = 0;
-	
-			foreach ($this->reviews as $review) {
-					$rating = $review->getRating();
-					if ($rating !== null) {
-							$totalRating += $rating;
-							$reviewCount++;
-					}
+		$totalRating = 0;
+		$reviewCount = 0;
+
+		foreach ($this->reviews as $review) {
+			$rating = $review->getRating();
+			if ($rating !== null) {
+				$totalRating += $rating;
+				$reviewCount++;
 			}
-	
-			if ($reviewCount === 0) {
-					return null;
-			}
-	
-			return $totalRating / $reviewCount;
+		}
+
+		if ($reviewCount === 0) {
+			return null;
+		}
+
+		return $totalRating / $reviewCount;
 	}
 }

@@ -53,7 +53,7 @@ class NetworkController extends AbstractController
         }
     }
 
-    // Recupère les livres postés par les amis
+    // Recupère les livres (+critiques) postés par notre réseau d'amis
     #[Route('/fv1-api/network/books', name: 'get_books_by_network', methods: ['GET'])]
     public function getBooksByNetwork(): JsonResponse
     {

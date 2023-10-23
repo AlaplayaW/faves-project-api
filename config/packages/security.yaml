@@ -47,9 +47,7 @@ security:
         - { path: ^/$, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI
         - { path: ^/fv1-api/login, roles: PUBLIC_ACCESS }
         - { path: ^/fv1-api/users, method: POST, roles: PUBLIC_ACCESS }
-        - { path: ^/fv1-api, roles: IS_AUTHENTICATED_FULLY } # Allows accessing the Swagger UI
-        - { path: ^/fv1-api/docs, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI docs
-
+        - { path: ^/fv1-api/, roles: ROLE_USER } # Allows accessing the Swagger UI
 
 when@test:
     security:
