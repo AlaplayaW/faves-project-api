@@ -25,6 +25,7 @@ use App\Controller\NetworkController;
 #[ApiResource(
 	normalizationContext: ['groups' => ['book:read', 'time:read']],
 	denormalizationContext: ['groups' => ['book:write']],
+	security: ("is_granted('ROLE_USER')"),
 
 	operations: [
 		new GetCollection(
