@@ -3,11 +3,14 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Put;
 use App\Entity\Traits\Timer;
 use App\Entity\User;
 use App\Repository\FriendshipRepository;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\GetCollection;
 use App\Controller\NetworkController;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -15,9 +18,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => ['friend:read', 'time:read']],
+    denormalizationContext: ['groups' => ['friend:write']],
     operations: [
-        new GetCollection(
-        ),
+        new GetCollection(),
         new GetCollection(
             name: 'get_all_friends_by_network',
             uriTemplate: '/network/all-friends',
@@ -35,6 +38,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 'summary' => "Récupère la liste des amis validés de l'utilisateur actuellement connecté",
             ],
         ),
+        new Post(),
+        new Put(),
+        new Delete()
     ]
 )]
 
@@ -59,7 +65,7 @@ class Friendship
     #[Groups(['friend:read'])]
     private ?int $id = null;
 
-    #[Groups(['friend:read'])]
+    #[Groups(['friend:read', 'friend:write'])]
     #[ORM\Column(type: 'string')]
     private string $status = self::STATUS_PENDING;
 
@@ -73,12 +79,12 @@ class Friendship
     #[ORM\Column(type: 'datetime', nullable: true)]
     private $rejectionDate = null;
 
-    #[Groups(['friend:read'])]
+    #[Groups(['friend:read', 'friend:write'])]
     #[ORM\ManyToOne(inversedBy: 'friendRequesters')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $friendRequester = null;
 
-    #[Groups(['friend:read'])]
+    #[Groups(['friend:read', 'friend:write'])]
     #[ORM\ManyToOne(inversedBy: 'friendAccepters')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $friendAccepter = null;
